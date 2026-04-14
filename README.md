@@ -3,7 +3,7 @@
   <img src="frontend/public/Logo.png" alt="Logo" width="250"/>
 </p>
 
-<h1 align="center">DNP project</h1>
+<h1 align="center">DNP project [S26]</h1>
 
 <h2 align="center">Состав команды</h2>
 
