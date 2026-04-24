@@ -50,12 +50,41 @@
 
 <h2 align="center">Взаимодействие сервисов</h2>
 
-- **Apache Kafka** — основная шина событий  
+- **Apache Kafka** — единая event bus системы
   Используется для передачи:
   - market data  
   - сигналов  
   - ордеров  
   - результатов исполнения  
+
+- **market-data-service** является единственным источником рыночных данных внутри системы.
+  Он читает CSV / mock source / внешний источник и публикует события в Kafka topic `market-data`.
+  Остальные сервисы получают market data через Kafka, чтобы не дублировать загрузку данных.
+
+- Общий flow:
+
+```text
+market-data-service
+  → Kafka topic `market-data`
+    → strategy-service
+    → execution-sim-service price cache
+
+strategy-service
+  → Kafka topic `signals`
+  → trading-core
+
+trading-core
+  → Kafka topic `orders`
+  → execution-sim-service
+
+execution-sim-service
+  → Kafka topic `execution-result`
+  → trading-core
+
+trading-core
+  → PostgreSQL
+  → frontend API / WebSocket
+```
 
 - **REST API / WebSocket** — взаимодействие frontend ↔ backend  
   *(точный протокол будет определён позже)*

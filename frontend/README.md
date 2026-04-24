@@ -36,7 +36,8 @@
 - symbol;
 - price;
 - timestamp;
-- при желании — простой график цены.
+- простой график цены;
+- список последних market events.
 
 Минимум для MVP:
 - таблица или список последних рыночных событий.
@@ -85,6 +86,8 @@
 - executed price;
 - quantity;
 - status;
+- marketDataEventId;
+- priceTimestamp;
 - timestamp.
 
 Минимум для MVP:
@@ -156,3 +159,17 @@ Frontend и backend должны договориться о формате да
 - PortfolioSnapshot.
 
 Это нужно для того, чтобы frontend сразу рисовал данные в правильной структуре и потом не пришлось всё переделывать.
+
+Dashboard должен визуально показывать полный flow:
+
+```text
+MarketData → Signal → Order → ExecutionResult → Portfolio update
+```
+
+В демо можно показать:
+1. появилась новая рыночная цена;
+2. стратегия сгенерировала сигнал;
+3. `trading-core` создал order;
+4. `execution-sim-service` исполнил order по latest price из market data cache;
+5. portfolio обновился;
+6. все изменения отображаются на dashboard.
