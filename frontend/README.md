@@ -173,3 +173,26 @@ MarketData → Signal → Order → ExecutionResult → Portfolio update
 4. `execution-sim-service` исполнил order по latest price из market data cache;
 5. portfolio обновился;
 6. все изменения отображаются на dashboard.
+
+---
+
+## Текущий frontend stack
+
+- React
+- Vite
+- mock data без подключения к backend
+
+## Запуск
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+## Что уже подготовлено
+
+- адаптивный dashboard-first интерфейс;
+- секции: `Market`, `Signals`, `Orders`, `Execution`, `Portfolio`;
+- mock flow `MarketData -> Signal -> Order -> Execution -> Portfolio`;
+- архитектура готова для следующего этапа с REST / WebSocket.

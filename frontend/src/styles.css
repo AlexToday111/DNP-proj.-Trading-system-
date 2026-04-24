@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+@layer base {
+  * {
+    @apply border-line;
+  }
+
+  html {
+    @apply bg-canvas text-text antialiased;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply m-0 min-h-screen bg-canvas font-sans text-text;
+    background-image:
+      radial-gradient(circle at top left, rgba(15, 107, 75, 0.08), transparent 28%),
+      radial-gradient(circle at top right, rgba(185, 133, 55, 0.08), transparent 26%);
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  ::selection {
+    @apply bg-accent/15 text-text;
+  }
+}
+
+@layer components {
+  .surface-card {
+    @apply min-w-0 overflow-hidden rounded-card border border-line bg-surface shadow-soft;
+  }
+
+  .surface-card-hover {
+    @apply transition duration-200 hover:-translate-y-0.5 hover:shadow-card;
+  }
+
+  .panel-shell {
+    @apply min-h-0 min-w-0 overflow-hidden;
+  }
+
+  .panel-fixed {
+    @apply h-full min-h-0 min-w-0 overflow-hidden;
+  }
+
+  .panel-scroll {
+    @apply min-h-0 overflow-x-hidden overflow-y-auto pr-1;
+    scrollbar-width: thin;
+  }
+
+  .eyebrow {
+    @apply text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted;
+  }
+
+  .mono-data {
+    @apply font-mono text-[0.92rem] tracking-[-0.04em];
+  }
+
+  .scroll-shell {
+    @apply overflow-x-auto;
+    scrollbar-width: thin;
+  }
+
+  .control-input {
+    @apply h-11 w-full rounded-2xl border border-line bg-shell px-4 text-sm text-text outline-none transition focus:border-accent focus:ring-4 focus:ring-accent/10;
+  }
+
+  .control-select {
+    @apply h-11 rounded-2xl border border-line bg-shell px-4 text-sm text-text outline-none transition focus:border-accent focus:ring-4 focus:ring-accent/10;
+  }
+
+  .control-button {
+    @apply inline-flex h-11 items-center justify-center rounded-2xl border border-line bg-surface px-4 text-sm font-semibold text-text transition hover:border-accent/30 hover:bg-accent/5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/10;
+  }
+
+  .status-dot {
+    @apply h-2.5 w-2.5 rounded-full;
+  }
+
+  .status-dot-live {
+    @apply bg-positive animate-glow;
+  }
+
+  .status-dot-paused {
+    @apply bg-warning;
+  }
+
+  .status-dot-disconnected {
+    @apply bg-negative;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
