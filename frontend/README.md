@@ -13,174 +13,123 @@
 
 ---
 
-## Что должно быть во frontend MVP
+## Frontend
 
-### 1. Главный dashboard
-Главная страница, на которой видно текущее состояние системы.
+Frontend уже собран как отдельное приложение на `React + TypeScript + Vite`.
+Сейчас это dashboard для trading-system с навигацией по страницам, таблицами, карточками метрик, графиком цены и подключением к backend API.
 
-Что должно отображаться:
-- статус сервисов;
-- текущий инструмент;
-- последняя цена;
-- текущее состояние портфеля;
-- список последних сигналов;
-- список последних ордеров;
-- список последних исполнений.
+## Что уже есть
 
----
+Реализованы страницы:
+- `Overview`
+- `Market Data`
+- `Signals`
+- `Orders`
+- `Executions`
+- `Portfolio`
+- `System Health`
 
-### 2. Блок market data
-Нужно показать, что рыночные данные реально поступают в систему.
+Что уже работает в интерфейсе:
+- основной layout с `TopBar` и `Sidebar`;
+- переключение страниц внутри dashboard;
+- выбор инструмента (`symbol`) из интерфейса;
+- синхронизация текущей страницы и выбранного инструмента через query params;
+- загрузка данных с backend;
+- отображение ошибки, если backend недоступен;
+- стартовые skeleton-состояния при первой загрузке;
+- единый visual flow системы: `MarketData → Signal → Order → Execution → Portfolio`.
 
-Что отображать:
-- symbol;
-- price;
-- timestamp;
-- простой график цены;
-- список последних market events.
+## Что отображается по страницам
 
-Минимум для MVP:
-- таблица или список последних рыночных событий.
+### Overview
+- общие метрики портфеля: `Portfolio Value`, `Cash`, `Position Value`, `Total PnL`;
+- snapshot последней цепочки `Market data → Signal → Order → Execution`;
+- карточка состояния сервисов;
+- блок visual flow;
+- лента последних событий;
+- сводка по данным, пришедшим из `GET /dashboard`.
 
----
+### Market Data
+- количество market events;
+- текущий volume;
+- изменение цены за сессию;
+- график цены по инструменту;
+- поиск по `event id` и `symbol`;
+- таблица последних рыночных событий.
 
-### 3. Блок signals
-Нужно показать сигналы, которые генерирует стратегия.
+### Signals
+- счётчики всех, `BUY` и `SELL` сигналов;
+- карточка последнего сигнала;
+- поиск по `signal id`, `symbol`, `reason`;
+- фильтр по стороне сигнала;
+- таблица сигналов.
 
-Что отображать:
-- signal id;
-- symbol;
-- side (BUY / SELL);
-- price;
-- timestamp;
-- причина или тип сигнала (если будет).
-
-Минимум для MVP:
-- таблица последних сигналов.
-
----
-
-### 4. Блок orders
-Нужно показать, какие ордера создаёт система.
-
-Что отображать:
-- order id;
-- symbol;
-- side;
-- quantity;
-- status;
-- timestamp.
-
-Минимум для MVP:
+### Orders
+- количество ордеров;
+- число открытых ордеров;
+- число исполнений по выбранному инструменту;
+- summary-card по ордерам;
+- поиск по `order id`, `signal id`, `symbol`, `type`;
+- фильтр по статусу;
 - таблица ордеров.
 
----
-
-### 5. Блок execution results
-Нужно показать результат работы execution simulator.
-
-Что отображать:
-- execution id;
-- order id;
-- symbol;
-- executed price;
-- quantity;
-- status;
-- marketDataEventId;
-- priceTimestamp;
-- timestamp.
-
-Минимум для MVP:
+### Executions
+- количество исполнений;
+- средняя цена исполнения;
+- статус последнего исполнения;
+- карточка latest execution;
+- поиск по `execution id`, `order id`, `symbol`, `status`;
 - таблица исполнений.
 
----
+### Portfolio
+- метрики по `cash`, `portfolio value`, `position value`, `realized/unrealized/total PnL`;
+- количество открытых позиций;
+- таблица holdings с позициями портфеля.
 
-### 6. Блок portfolio
-Нужно показать текущее состояние портфеля.
+### System Health
+- количество `healthy`, `degraded`, `down` сервисов;
+- карточка health-статусов сервисов;
+- visual flow системы;
+- activity feed по system/execution/portfolio событиям.
 
-Что отображать:
-- cash;
-- open positions;
-- average entry price;
-- unrealized PnL;
-- realized PnL;
-- total PnL.
+## Подключение к backend
 
-Минимум для MVP:
-- карточка портфеля с основными значениями.
+Frontend уже работает не только на mock-структуре интерфейса, а с реальными HTTP-запросами.
 
----
+Используются endpoints:
+- `GET /health`
+- `GET /system/status`
+- `GET /dashboard`
+- `GET /market-data`
+- `GET /market-data/:symbol/latest`
+- `GET /market-data/:symbol/history`
+- `GET /signals`
+- `GET /orders`
+- `GET /executions`
+- `GET /portfolio`
+- `GET /portfolio/positions`
 
-## Что нужно сделать на первой неделе
-
-### Неделя 1 — задачи для фронта
-
-- продумать структуру dashboard;
-- сверстать основной layout;
-- сделать базовые UI-компоненты:
-  - header,
-  - sidebar или menu,
-  - cards,
-  - tables;
-- подготовить страницы/блоки:
-  - Market Data,
-  - Signals,
-  - Orders,
-  - Execution Results,
-  - Portfolio;
-- подключить frontend к backend через mock API или заглушки;
-- вывести тестовые данные на экран;
-- согласовать с backend формат данных, которые будут приходить.
-
----
-
-## Что должно быть готово к концу первой недели
-
-- frontend-проект запускается;
-- есть основной dashboard;
-- есть страницы или блоки для:
-  - market data,
-  - signals,
-  - orders,
-  - execution results,
-  - portfolio;
-- интерфейс отображает mock-данные;
-- структура UI уже готова для подключения к реальному backend.
-
----
-
-## Что важно согласовать с backend
-
-Frontend и backend должны договориться о формате данных для следующих сущностей:
-- MarketData;
-- Signal;
-- Order;
-- ExecutionResult;
-- PortfolioSnapshot.
-
-Это нужно для того, чтобы frontend сразу рисовал данные в правильной структуре и потом не пришлось всё переделывать.
-
-Dashboard должен визуально показывать полный flow:
+По умолчанию base URL:
 
 ```text
-MarketData → Signal → Order → ExecutionResult → Portfolio update
+http://localhost:8080/api/v1
 ```
 
-В демо можно показать:
-1. появилась новая рыночная цена;
-2. стратегия сгенерировала сигнал;
-3. `trading-core` создал order;
-4. `execution-sim-service` исполнил order по latest price из market data cache;
-5. portfolio обновился;
-6. все изменения отображаются на dashboard.
+Можно переопределить через переменную:
 
----
+```bash
+VITE_API_BASE_URL=http://localhost:8080/api/v1
+```
 
-## Текущий frontend stack
+## Текущий стек
 
-- React
-- Vite
-- mock data без подключения к backend
+- `React 18`
+- `TypeScript`
+- `Vite`
+- `Recharts`
+- `Tailwind CSS`
+- `clsx`
+- локальные hooks и UI-компоненты для dashboard
 
 ## Запуск
 
@@ -190,9 +139,32 @@ npm install
 npm run dev
 ```
 
-## Что уже подготовлено
+Дополнительно:
 
-- адаптивный dashboard-first интерфейс;
-- секции: `Market`, `Signals`, `Orders`, `Execution`, `Portfolio`;
-- mock flow `MarketData -> Signal -> Order -> Execution -> Portfolio`;
-- архитектура готова для следующего этапа с REST / WebSocket.
+```bash
+npm run build
+npm run preview
+npm run typecheck
+```
+
+## Структура данных, с которыми уже работает frontend
+
+Фронтенд уже типизирован под следующие сущности:
+- `MarketData`
+- `Signal`
+- `Order`
+- `Execution`
+- `PortfolioSnapshot`
+- `Position`
+- `SystemStatus / ServiceHealth`
+
+Это значит, что основа для интеграции с backend уже есть: страницы, таблицы, карточки и маппинг ответов API собраны.
+
+## Текущее состояние проекта
+
+На текущий момент frontend уже можно использовать как рабочий demo-dashboard:
+- приложение запускается локально;
+- есть основной dashboard и все ключевые страницы;
+- данные запрашиваются у backend API;
+- интерфейс показывает состояние сервисов, market data, signals, orders, executions и portfolio;
+- архитектура готова к дальнейшему развитию, включая более частые обновления данных и возможное расширение REST/WebSocket-интеграции.

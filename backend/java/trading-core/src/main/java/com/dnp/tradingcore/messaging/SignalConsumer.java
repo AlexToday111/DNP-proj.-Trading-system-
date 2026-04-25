@@ -8,6 +8,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.util.UUID;
+
 @Component
 public class SignalConsumer {
     private final ObjectMapper objectMapper;
@@ -23,11 +26,12 @@ public class SignalConsumer {
         SignalMessage message = fromPayload(payload);
 
         Signal signal = new Signal(
-                message.signalId(),
+                safeId(message.signalId()),
                 message.symbol(),
                 message.side(),
-                message.quantity(),
-                message.targetPrice(),
+                defaultQuantity(message.quantity()),
+                defaultPrice(message.targetPrice()),
+                message.reason(),
                 message.timestamp()
         );
 
@@ -40,5 +44,18 @@ public class SignalConsumer {
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("Invalid signal payload", e);
         }
+    }
+
+    private String safeId(String signalId) {
+        return signalId != null && !signalId.isBlank() ? signalId : "sig-" + UUID.randomUUID();
+    }
+
+    private BigDecimal defaultQuantity(BigDecimal quantity) {
+        // TODO: replace default signal quantity when strategy-service publishes explicit sizing.
+        return quantity != null ? quantity : BigDecimal.ONE;
+    }
+
+    private BigDecimal defaultPrice(BigDecimal price) {
+        return price != null ? price : BigDecimal.ZERO;
     }
 }

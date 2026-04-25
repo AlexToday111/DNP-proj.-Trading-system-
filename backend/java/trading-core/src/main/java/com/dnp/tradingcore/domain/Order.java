@@ -9,7 +9,9 @@ public record Order(
         String symbol,
         OrderSide side,
         BigDecimal quantity,
-        BigDecimal requestedPrice,
+        OrderType orderType,
+        BigDecimal limitPrice,
+        OrderStatus status,
         Instant timestamp
 ) {
 }
