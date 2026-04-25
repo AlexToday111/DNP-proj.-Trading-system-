@@ -9,10 +9,10 @@ export function OrdersTable({ rows }: { rows: Order[] }) {
       rows={rows}
       rowKey={(row) => row.orderId}
       emptyTitle="No orders yet"
-      emptyDescription="Orders created by trading-core will appear here as signals are promoted."
+      emptyDescription="Orders created by trading-core will appear here."
       columns={[
         { header: 'Order', render: (row) => <span className="mono-data">{row.orderId}</span> },
-        { header: 'Signal', render: (row) => <span className="mono-data">{row.signalId}</span> },
+        { header: 'Signal', render: (row) => <span className="mono-data">{row.signalId ?? '—'}</span> },
         { header: 'Symbol', render: (row) => <span className="font-semibold">{row.symbol}</span> },
         {
           header: 'Side',
@@ -25,7 +25,12 @@ export function OrdersTable({ rows }: { rows: Order[] }) {
           )
         },
         { header: 'Qty', align: 'right', render: (row) => <span className="mono-data">{row.quantity}</span> },
-        { header: 'Requested', align: 'right', render: (row) => <span className="mono-data">{formatCurrency(row.requestedPrice)}</span> },
+        { header: 'Type', render: (row) => row.orderType },
+        {
+          header: 'Limit',
+          align: 'right',
+          render: (row) => <span className="mono-data">{row.limitPrice === null ? '—' : formatCurrency(row.limitPrice)}</span>
+        },
         { header: 'Status', render: (row) => row.status },
         { header: 'Time', align: 'right', render: (row) => <span className="mono-data">{formatTime(row.timestamp)}</span> }
       ]}

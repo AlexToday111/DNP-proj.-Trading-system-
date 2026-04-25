@@ -1,5 +1,5 @@
 import { DataTable } from './DataTable'
-import { formatCurrency, formatSignedBasisPoints, formatTime } from '../../lib/utils'
+import { formatCurrency, formatTime } from '../../lib/utils'
 import { type Execution } from '../../types/trading'
 
 export function ExecutionsTable({ rows }: { rows: Execution[] }) {
@@ -9,23 +9,25 @@ export function ExecutionsTable({ rows }: { rows: Execution[] }) {
       rows={rows}
       rowKey={(row) => row.executionId}
       emptyTitle="No executions yet"
-      emptyDescription="Simulated fills will appear here once orders are matched by the execution service."
+      emptyDescription="Execution results from trading-core will appear here after orders are filled."
       columns={[
         { header: 'Execution', render: (row) => <span className="mono-data">{row.executionId}</span> },
         { header: 'Order', render: (row) => <span className="mono-data">{row.orderId}</span> },
         { header: 'Symbol', render: (row) => <span className="font-semibold">{row.symbol}</span> },
-        { header: 'Venue', render: (row) => row.venue },
-        { header: 'Qty', align: 'right', render: (row) => <span className="mono-data">{row.quantity}</span> },
-        { header: 'Price', align: 'right', render: (row) => <span className="mono-data">{formatCurrency(row.executedPrice)}</span> },
         {
-          header: 'Slippage',
-          align: 'right',
+          header: 'Side',
           render: (row) => (
-            <span className={`mono-data ${row.slippageBps < 0 ? 'text-negative' : 'text-positive'}`}>
-              {formatSignedBasisPoints(row.slippageBps)}
+            <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+              row.side === 'BUY' ? 'bg-accent-soft text-positive' : 'bg-warning/10 text-warning'
+            }`}>
+              {row.side}
             </span>
           )
         },
+        { header: 'Qty', align: 'right', render: (row) => <span className="mono-data">{row.quantity}</span> },
+        { header: 'Price', align: 'right', render: (row) => <span className="mono-data">{formatCurrency(row.executedPrice)}</span> },
+        { header: 'Status', render: (row) => row.status },
+        { header: 'Market Event', render: (row) => <span className="mono-data">{row.marketDataEventId ?? '—'}</span> },
         { header: 'Time', align: 'right', render: (row) => <span className="mono-data">{formatTime(row.timestamp)}</span> }
       ]}
     />

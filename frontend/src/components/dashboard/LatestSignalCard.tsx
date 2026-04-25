@@ -19,7 +19,7 @@ export function LatestSignalCard({ signal, className = '' }: LatestSignalCardPro
           </h3>
         </div>
         <span className={`rounded-full px-3 py-1 text-xs font-semibold ${sideTone}`}>
-          {signal.conviction} conviction
+          {signal.side}
         </span>
       </div>
 
@@ -28,14 +28,10 @@ export function LatestSignalCard({ signal, className = '' }: LatestSignalCardPro
           <p className="break-words text-sm leading-6 text-muted">{signal.reason}</p>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <div className="min-w-0">
-            <p className="eyebrow">Target</p>
-            <p className="mono-data mt-1 break-words text-base text-text">{formatCurrency(signal.targetPrice)}</p>
-          </div>
-          <div className="min-w-0">
-            <p className="eyebrow">Quantity</p>
-            <p className="mono-data mt-1 text-base text-text">{signal.quantity}</p>
+            <p className="eyebrow">Price</p>
+            <p className="mono-data mt-1 break-words text-base text-text">{formatCurrency(signal.price)}</p>
           </div>
           <div className="min-w-0">
             <p className="eyebrow">Time</p>
