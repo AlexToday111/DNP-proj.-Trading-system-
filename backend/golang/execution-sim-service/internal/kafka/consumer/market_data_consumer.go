@@ -19,11 +19,12 @@ type MarketDataConsumer struct {
 }
 
 func NewMarketDataConsumer(cfg config.Config, srv interfaces.SimulateOrderInterface) *MarketDataConsumer {
-	return &MarketDataConsumer{kafkaReader: kafka.NewReader(kafka.ReaderConfig{
-		Brokers: cfg.KafkaBrokers,
-		Topic:   cfg.KafkaTopicMarketData,
-		GroupID: cfg.KafkaMarketDataGroupID,
-	}),
+	return &MarketDataConsumer{
+		kafkaReader: kafka.NewReader(kafka.ReaderConfig{
+			Brokers: cfg.KafkaBrokers,
+			Topic:   cfg.KafkaTopicMarketData,
+			GroupID: cfg.KafkaMarketDataGroupID,
+		}),
 		service: srv,
 	}
 }
@@ -64,11 +65,30 @@ func (c *MarketDataConsumer) Consume(ctx context.Context) {
 			continue
 		}
 
-		if err := c.service.ProcessMarketData(md); err != nil {
-			log.Printf("[ERROR] Process market data error: %v", err)
-			time.Sleep(100 * time.Millisecond)
+		const maxRetries = 3
+		var processErr error
+		for attempt := 0; attempt < maxRetries; attempt++ {
+			processErr = c.service.ProcessMarketData(md)
+			if processErr == nil {
+				break
+			}
+			log.Printf("[ERROR] Attempt %d/%d failed for market data %s: %v",
+				attempt+1, maxRetries, md.Symbol, processErr)
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(time.Duration(attempt+1) * 100 * time.Millisecond):
+			}
+		}
+
+		if processErr != nil {
+			log.Printf("[CRITICAL] All retries exhausted for market data %s, skipping", md.Symbol)
+			if commitErr := c.kafkaReader.CommitMessages(ctx, msg); commitErr != nil {
+				log.Printf("[ERROR] Failed to commit after skip: %v", commitErr)
+			}
 			continue
 		}
+
 		if err := c.kafkaReader.CommitMessages(ctx, msg); err != nil {
 			log.Printf("[ERROR] Failed to commit message at market data consumer: %v", err)
 		}

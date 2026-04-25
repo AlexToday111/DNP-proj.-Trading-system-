@@ -62,11 +62,32 @@ func (c *OrderConsumer) Consume(ctx context.Context) {
 				}
 				continue
 			}
-			if err := c.svc.ProcessOrder(ctx, order); err != nil {
-				log.Printf("[ERROR] Error processing order %s: %v", order.OrderId, err)
-				time.Sleep(100 * time.Millisecond)
+
+			const maxRetries = 3
+			var processErr error
+			for attempt := 0; attempt < maxRetries; attempt++ {
+				processErr = c.svc.ProcessOrder(ctx, order)
+				if processErr == nil {
+					break
+				}
+				log.Printf("[ERROR] Attempt %d/%d failed for order %s: %v",
+					attempt+1, maxRetries, order.OrderId, processErr)
+				select {
+				case <-ctx.Done():
+					return
+				case <-time.After(time.Duration(attempt+1) * 100 * time.Millisecond):
+				}
+			}
+
+			if processErr != nil {
+				log.Printf("[CRITICAL] All retries exhausted for order %s, skipping", order.OrderId)
+
+				if commitErr := c.kafkaReader.CommitMessages(ctx, msg); commitErr != nil {
+					log.Printf("[ERROR] Failed to commit after skip: %v", commitErr)
+				}
 				continue
 			}
+
 			if err := c.kafkaReader.CommitMessages(ctx, msg); err != nil {
 				log.Printf("[ERROR] Failed to commit message at orders consumer: %v", err)
 			}

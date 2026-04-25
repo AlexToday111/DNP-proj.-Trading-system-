@@ -131,17 +131,24 @@ func (s *SimulateOrder) ProcessOrder(ctx context.Context, order models.Order) er
 	s.mu.RLock()
 	rec, already := s.orderResults[order.OrderId]
 	s.mu.RUnlock()
+
 	if already {
-		log.Printf("[INFO] Duplicate order %s: returning cached result, status=%v", order.OrderId, rec.Result.Status)
-		return s.publishWithRetry(ctx, rec.Result)
+		log.Printf("[INFO] Duplicate order %s: resending cached result once", order.OrderId)
+		if err := s.publisher.PublishExecutionResult(ctx, rec.Result); err != nil {
+			log.Printf("[WARN] Failed to resend duplicate order %s: %v (will not block)", order.OrderId, err)
+		}
+		return nil
 	}
 
 	s.mu.Lock()
+	defer s.mu.Unlock()
 
 	if rec, already := s.orderResults[order.OrderId]; already {
-		s.mu.Unlock()
-		log.Printf("[INFO] Duplicate order %s (caught inside lock): returning cached result", order.OrderId)
-		return s.publishWithRetry(ctx, rec.Result)
+		log.Printf("[INFO] Duplicate order %s (caught inside lock): resending cached result once", order.OrderId)
+		if err := s.publisher.PublishExecutionResult(ctx, rec.Result); err != nil {
+			log.Printf("[WARN] Failed to resend duplicate order %s: %v (will not block)", order.OrderId, err)
+		}
+		return nil
 	}
 
 	cached, ok := s.cache[order.Symbol]
@@ -157,7 +164,7 @@ func (s *SimulateOrder) ProcessOrder(ctx context.Context, order models.Order) er
 			Timestamp:     time.Now().UTC().Format(time.RFC3339),
 		}
 		s.orderResults[order.OrderId] = orderRecord{Result: result, Timestamp: time.Now()}
-		s.mu.Unlock()
+
 		if err := s.publishWithRetry(ctx, result); err != nil {
 			log.Printf("[ERROR] Failed to publish after retries: %v", err)
 			return fmt.Errorf("publish failed: %w", err)
@@ -181,7 +188,6 @@ func (s *SimulateOrder) ProcessOrder(ctx context.Context, order models.Order) er
 			status = true
 		}
 	default:
-		s.mu.Unlock()
 		return fmt.Errorf("invalid side: %q", order.Side)
 	}
 
@@ -196,7 +202,6 @@ func (s *SimulateOrder) ProcessOrder(ctx context.Context, order models.Order) er
 		Timestamp:     time.Now().UTC().Format(time.RFC3339),
 	}
 	s.orderResults[order.OrderId] = orderRecord{Result: result, Timestamp: time.Now()}
-	s.mu.Unlock()
 
 	if err := s.publishWithRetry(ctx, result); err != nil {
 		log.Printf("[ERROR] Failed to publish execution result for order %s: %v", order.OrderId, err)
