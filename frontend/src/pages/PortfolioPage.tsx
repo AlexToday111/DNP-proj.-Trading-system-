@@ -1,48 +1,30 @@
-import { HeroPortfolioCard } from '../components/dashboard/HeroPortfolioCard'
-import { PortfolioTrendCard } from '../components/charts/PortfolioTrendCard'
 import { PortfolioHoldingsTable } from '../components/tables/PortfolioHoldingsTable'
 import { MetricCard } from '../components/ui/MetricCard'
 import { formatCompactCurrency, formatCurrency } from '../lib/utils'
-import { type PortfolioSnapshot } from '../types/trading'
+import { type PortfolioSnapshot, type Position } from '../types/trading'
 
 interface PortfolioPageProps {
-  animateOnMount: boolean
   currentSnapshot: PortfolioSnapshot
-  portfolioSeries: PortfolioSnapshot[]
-  fillRatio: number
+  positions: Position[]
 }
 
-export function PortfolioPage({
-  animateOnMount,
-  currentSnapshot,
-  portfolioSeries,
-  fillRatio
-}: PortfolioPageProps) {
+export function PortfolioPage({ currentSnapshot, positions }: PortfolioPageProps) {
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 xl:grid-cols-12">
-        <HeroPortfolioCard
-          animateOnMount={animateOnMount}
-          snapshots={portfolioSeries}
-          currentSnapshot={currentSnapshot}
-          fillRatio={fillRatio}
-          className="xl:col-span-5"
-        />
-        <PortfolioTrendCard
-          animateOnMount={animateOnMount}
-          snapshots={portfolioSeries}
-          className="xl:col-span-7"
-        />
-      </div>
-
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Portfolio value" value={formatCurrency(currentSnapshot.totalValue)} detail="Cash plus marked-to-market positions" />
-        <MetricCard label="Cash balance" value={formatCompactCurrency(currentSnapshot.cashBalance)} detail="Immediate buying power" />
-        <MetricCard label="Market value" value={formatCompactCurrency(currentSnapshot.marketValue)} detail="Open exposure in the book" />
+        <MetricCard label="Portfolio value" value={formatCurrency(currentSnapshot.totalPortfolioValue)} detail="Cash plus marked-to-market positions" />
+        <MetricCard label="Cash" value={formatCompactCurrency(currentSnapshot.cash)} detail="Immediate buying power" />
+        <MetricCard label="Position value" value={formatCompactCurrency(currentSnapshot.totalPositionValue)} detail="Current market value of open positions" />
         <MetricCard label="Realized PnL" value={formatCurrency(currentSnapshot.realizedPnl)} detail="Closed-trade contribution" />
       </div>
 
-      <PortfolioHoldingsTable rows={currentSnapshot.positions} />
+      <div className="grid gap-4 md:grid-cols-3">
+        <MetricCard label="Unrealized PnL" value={formatCurrency(currentSnapshot.unrealizedPnl)} detail="Open position contribution" />
+        <MetricCard label="Total PnL" value={formatCurrency(currentSnapshot.totalPnl)} detail="Realized plus unrealized result" />
+        <MetricCard label="Positions" value={String(positions.length)} detail={`Updated ${currentSnapshot.updatedAt || '—'}`} />
+      </div>
+
+      <PortfolioHoldingsTable rows={positions} />
     </div>
   )
 }

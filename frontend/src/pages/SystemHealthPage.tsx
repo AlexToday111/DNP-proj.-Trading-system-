@@ -21,8 +21,8 @@ export function SystemHealthPage({
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-3">
         <MetricCard label="Healthy" value={String(healthy)} detail="Services operating normally" />
-        <MetricCard label="Degraded" value={String(degraded)} detail="Needs attention but still serving traffic" />
-        <MetricCard label="Down" value={String(down)} detail="Disconnected or unavailable" />
+        <MetricCard label="Degraded" value={String(degraded)} detail="Services reporting degraded state" />
+        <MetricCard label="Down" value={String(down)} detail="Unavailable services" />
       </div>
 
       <SystemFlowCard />
@@ -30,7 +30,7 @@ export function SystemHealthPage({
       <div className="grid gap-4 xl:grid-cols-12">
         <ServiceHealthCard services={services} className="xl:col-span-7" />
         <ActivityFeed
-          events={activity.filter((event) => event.kind === 'system' || event.kind === 'execution')}
+          events={activity.filter((event) => event.kind === 'system' || event.kind === 'execution' || event.kind === 'portfolio')}
           className="xl:col-span-5"
         />
       </div>

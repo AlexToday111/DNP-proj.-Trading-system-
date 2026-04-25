@@ -28,7 +28,7 @@ export function OrdersPage({
         .reverse()
         .filter((order) => {
           const matchesStatus = status === 'all' || order.status === status
-          const haystack = `${order.orderId} ${order.signalId} ${order.symbol}`.toLowerCase()
+          const haystack = `${order.orderId} ${order.signalId ?? ''} ${order.symbol} ${order.orderType}`.toLowerCase()
           return matchesStatus && haystack.includes(deferredQuery.toLowerCase())
         }),
     [deferredQuery, orders, status]
@@ -38,9 +38,9 @@ export function OrdersPage({
     <div className="space-y-4">
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="grid gap-4 md:grid-cols-3">
-          <MetricCard label="Orders" value={String(orders.length)} detail="Trading-core intents visible" />
-          <MetricCard label="In flight" value={String(openOrders)} detail="Orders waiting for a final state" />
-          <MetricCard label="Filled" value={String(totalExecutions)} detail="Executions completed by simulator" />
+          <MetricCard label="Orders" value={String(orders.length)} detail="Orders returned by trading-core" />
+          <MetricCard label="Open" value={String(openOrders)} detail="Orders without terminal status" />
+          <MetricCard label="Filled" value={String(totalExecutions)} detail="Executions visible for this symbol" />
         </div>
         <OrdersSummaryCard
           totalOrders={orders.length}
@@ -52,7 +52,7 @@ export function OrdersPage({
 
       <FilterBar
         searchValue={query}
-        searchPlaceholder="Search by order id, signal id, or symbol"
+        searchPlaceholder="Search by order id, signal id, symbol, or type"
         onSearchChange={setQuery}
         filters={[
           {
@@ -61,9 +61,13 @@ export function OrdersPage({
             onChange: setStatus,
             options: [
               { label: 'All statuses', value: 'all' },
+              { label: 'New', value: 'NEW' },
               { label: 'Placed', value: 'PLACED' },
               { label: 'Routed', value: 'ROUTED' },
-              { label: 'Filled', value: 'FILLED' }
+              { label: 'Partial', value: 'PARTIAL' },
+              { label: 'Filled', value: 'FILLED' },
+              { label: 'Rejected', value: 'REJECTED' },
+              { label: 'Cancelled', value: 'CANCELLED' }
             ]
           }
         ]}

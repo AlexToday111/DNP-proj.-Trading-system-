@@ -1,13 +1,14 @@
 import { useDeferredValue, useMemo, useState } from 'react'
 import { LatestSignalCard } from '../components/dashboard/LatestSignalCard'
 import { SignalsTable } from '../components/tables/SignalsTable'
+import { EmptyState } from '../components/ui/EmptyState'
 import { FilterBar } from '../components/ui/FilterBar'
 import { MetricCard } from '../components/ui/MetricCard'
 import { type Signal } from '../types/trading'
 
 interface SignalsPageProps {
   signals: Signal[]
-  latestSignal: Signal
+  latestSignal: Signal | null
 }
 
 export function SignalsPage({ signals, latestSignal }: SignalsPageProps) {
@@ -31,11 +32,15 @@ export function SignalsPage({ signals, latestSignal }: SignalsPageProps) {
     <div className="space-y-4">
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="grid gap-4 md:grid-cols-3">
-          <MetricCard label="Signals" value={String(signals.length)} detail="Total visible strategy outputs" />
-          <MetricCard label="Buy bias" value={String(signals.filter((signal) => signal.side === 'BUY').length)} detail="Signals leaning long" />
-          <MetricCard label="Sell bias" value={String(signals.filter((signal) => signal.side === 'SELL').length)} detail="Signals leaning defensive" />
+          <MetricCard label="Signals" value={String(signals.length)} detail="Latest strategy outputs from backend" />
+          <MetricCard label="Buy" value={String(signals.filter((signal) => signal.side === 'BUY').length)} detail="BUY signals in current response" />
+          <MetricCard label="Sell" value={String(signals.filter((signal) => signal.side === 'SELL').length)} detail="SELL signals in current response" />
         </div>
-        <LatestSignalCard signal={latestSignal} />
+        {latestSignal ? (
+          <LatestSignalCard signal={latestSignal} />
+        ) : (
+          <EmptyState title="No latest signal" description="Once strategy-service emits a signal, the latest one will be highlighted here." />
+        )}
       </div>
 
       <FilterBar

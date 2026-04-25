@@ -6,22 +6,129 @@ export type PageId =
   | 'executions'
   | 'portfolio'
   | 'system-health'
-  | 'settings'
 
 export type Side = 'BUY' | 'SELL'
-export type Tone = 'positive' | 'negative' | 'warning' | 'neutral'
-export type SimulationStatus = 'live' | 'paused' | 'disconnected'
-export type OrderStatus = 'PLACED' | 'ROUTED' | 'PARTIAL' | 'FILLED' | 'REJECTED'
+export type AppStatus = 'live' | 'disconnected'
+export type OrderStatus = 'NEW' | 'PLACED' | 'ROUTED' | 'PARTIAL' | 'FILLED' | 'REJECTED' | 'CANCELLED'
 export type ExecutionStatus = 'FILLED' | 'PARTIAL' | 'REJECTED'
+export type BackendSystemState = 'UP' | 'DOWN' | 'DEGRADED' | 'UNKNOWN'
 export type ServiceStatus = 'healthy' | 'degraded' | 'down'
+export type Tone = 'positive' | 'negative' | 'warning' | 'neutral'
 
-export interface Instrument {
+export interface DashboardLocation {
+  page: PageId
   symbol: string
+}
+
+export interface NavigationItem {
+  id: PageId
+  label: string
+  description: string
+}
+
+export interface ApiListResponse<T> {
+  items: T[]
+}
+
+export interface HealthResponse {
+  status: BackendSystemState
+  service: string
+  timestamp: string
+}
+
+export interface ApiSystemService {
   name: string
-  venue: string
-  previousClose: number
-  sessionHigh: number
-  sessionLow: number
+  status: BackendSystemState
+  type: string
+}
+
+export interface SystemStatusResponse {
+  status: BackendSystemState
+  services: ApiSystemService[]
+  timestamp: string
+}
+
+export interface ApiMarketTick {
+  eventId: string
+  symbol: string
+  price: number
+  volume: number
+  timestamp: string
+}
+
+export interface MarketHistoryPoint {
+  price: number
+  timestamp: string
+}
+
+export interface MarketHistoryResponse {
+  symbol: string
+  items: MarketHistoryPoint[]
+}
+
+export interface ApiSignal {
+  signalId: string
+  symbol: string
+  side: Side
+  price: number
+  reason: string
+  timestamp: string
+}
+
+export interface ApiOrder {
+  orderId: string
+  signalId: string | null
+  symbol: string
+  side: Side
+  quantity: number
+  orderType: string
+  limitPrice: number | null
+  status: OrderStatus
+  timestamp: string
+}
+
+export interface ApiExecution {
+  executionId: string
+  orderId: string
+  symbol: string
+  side: Side
+  quantity: number
+  executedPrice: number
+  status: ExecutionStatus
+  marketDataEventId: string | null
+  priceTimestamp: string | null
+  timestamp: string
+}
+
+export interface PortfolioResponse {
+  cash: number
+  totalPositionValue: number
+  totalPortfolioValue: number
+  realizedPnl: number
+  unrealizedPnl: number
+  totalPnl: number
+  updatedAt: string
+}
+
+export interface ApiPosition {
+  symbol: string
+  quantity: number
+  averageEntryPrice: number
+  latestPrice: number
+  marketValue: number
+  unrealizedPnl: number
+  updatedAt: string
+}
+
+export interface DashboardResponse {
+  systemStatus: {
+    status: BackendSystemState
+  }
+  latestMarketData: ApiMarketTick[]
+  latestSignals: ApiSignal[]
+  latestOrders: ApiOrder[]
+  latestExecutions: ApiExecution[]
+  portfolio: PortfolioResponse
 }
 
 export interface MarketTick {
@@ -29,7 +136,6 @@ export interface MarketTick {
   symbol: string
   price: number
   volume: number
-  source: string
   timestamp: string
 }
 
@@ -37,20 +143,19 @@ export interface Signal {
   signalId: string
   symbol: string
   side: Side
-  quantity: number
-  targetPrice: number
-  conviction: 'High' | 'Medium' | 'Low'
+  price: number
   reason: string
   timestamp: string
 }
 
 export interface Order {
   orderId: string
-  signalId: string
+  signalId: string | null
   symbol: string
   side: Side
   quantity: number
-  requestedPrice: number
+  orderType: string
+  limitPrice: number | null
   status: OrderStatus
   timestamp: string
 }
@@ -63,70 +168,46 @@ export interface Execution {
   quantity: number
   executedPrice: number
   status: ExecutionStatus
+  marketDataEventId: string | null
+  priceTimestamp: string | null
   timestamp: string
-  venue: string
-  slippageBps: number
 }
 
 export interface Position {
   symbol: string
   quantity: number
-  averageEntry: number
-  marketPrice: number
+  averageEntryPrice: number
+  latestPrice: number
   marketValue: number
   unrealizedPnl: number
+  updatedAt: string
   weight: number
 }
 
 export interface PortfolioSnapshot {
   updatedAt: string
-  cashBalance: number
-  marketValue: number
+  cash: number
+  totalPositionValue: number
+  totalPortfolioValue: number
   realizedPnl: number
   unrealizedPnl: number
   totalPnl: number
-  totalValue: number
-  positions: Position[]
 }
 
 export interface ServiceHealth {
   serviceId: string
   name: string
   status: ServiceStatus
-  latencyMs: number
+  type: string
   detail: string
   lastHeartbeat: string
-  channel?: string
 }
 
 export interface ActivityEvent {
   id: string
-  kind: 'market' | 'signal' | 'order' | 'execution' | 'system'
+  kind: 'market' | 'signal' | 'order' | 'execution' | 'system' | 'portfolio'
   title: string
   detail: string
   timestamp: string
   tone: Tone
-}
-
-export interface ScenarioSetting {
-  id: string
-  label: string
-  description: string
-  type: 'toggle' | 'range' | 'select'
-  value: boolean | number | string
-  options?: string[]
-  min?: number
-  max?: number
-  step?: number
-}
-
-export interface NavigationItem {
-  id: PageId
-  label: string
-  description: string
-}
-
-export interface DashboardLocation {
-  page: PageId
-  symbol: string
 }

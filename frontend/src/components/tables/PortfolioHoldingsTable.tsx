@@ -1,5 +1,5 @@
 import { DataTable } from './DataTable'
-import { formatCurrency, formatPercent, toneFromNumber } from '../../lib/utils'
+import { formatCurrency, formatPercent, formatTime, toneFromNumber } from '../../lib/utils'
 import { type Position } from '../../types/trading'
 
 export function PortfolioHoldingsTable({ rows }: { rows: Position[] }) {
@@ -9,12 +9,12 @@ export function PortfolioHoldingsTable({ rows }: { rows: Position[] }) {
       rows={rows}
       rowKey={(row) => row.symbol}
       emptyTitle="No open positions"
-      emptyDescription="Once fills land, the portfolio page will show current holdings and unrealized PnL here."
+      emptyDescription="Open positions from the portfolio service will appear here."
       columns={[
         { header: 'Symbol', render: (row) => <span className="font-semibold">{row.symbol}</span> },
         { header: 'Qty', align: 'right', render: (row) => <span className="mono-data">{row.quantity}</span> },
-        { header: 'Avg entry', align: 'right', render: (row) => <span className="mono-data">{formatCurrency(row.averageEntry)}</span> },
-        { header: 'Market price', align: 'right', render: (row) => <span className="mono-data">{formatCurrency(row.marketPrice)}</span> },
+        { header: 'Avg entry', align: 'right', render: (row) => <span className="mono-data">{formatCurrency(row.averageEntryPrice)}</span> },
+        { header: 'Latest price', align: 'right', render: (row) => <span className="mono-data">{formatCurrency(row.latestPrice)}</span> },
         { header: 'Market value', align: 'right', render: (row) => <span className="mono-data">{formatCurrency(row.marketValue)}</span> },
         {
           header: 'Unrealized PnL',
@@ -25,7 +25,8 @@ export function PortfolioHoldingsTable({ rows }: { rows: Position[] }) {
             </span>
           )
         },
-        { header: 'Weight', align: 'right', render: (row) => <span className="mono-data">{formatPercent(row.weight * 100)}</span> }
+        { header: 'Weight', align: 'right', render: (row) => <span className="mono-data">{formatPercent(row.weight * 100)}</span> },
+        { header: 'Updated', align: 'right', render: (row) => <span className="mono-data">{formatTime(row.updatedAt)}</span> }
       ]}
     />
   )

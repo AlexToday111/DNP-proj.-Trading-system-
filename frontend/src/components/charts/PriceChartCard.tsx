@@ -13,7 +13,6 @@ import { formatCurrency, formatNumber, formatPercent, formatShortTime } from '..
 interface PriceChartCardProps {
   animateOnMount?: boolean
   symbol: string
-  instrumentName: string
   currentPrice: number
   sessionMovePct: number
   sessionHigh: number
@@ -21,7 +20,7 @@ interface PriceChartCardProps {
   ticks: Array<{
     timestamp: string
     price: number
-    volume: number
+    volume?: number
   }>
   className?: string
 }
@@ -29,7 +28,6 @@ interface PriceChartCardProps {
 export function PriceChartCard({
   animateOnMount = true,
   symbol,
-  instrumentName,
   currentPrice,
   sessionMovePct,
   sessionHigh,
@@ -40,7 +38,7 @@ export function PriceChartCard({
   const chartData = ticks.map((tick) => ({
     time: formatShortTime(tick.timestamp),
     price: Number(tick.price.toFixed(2)),
-    volume: tick.volume
+    volume: tick.volume ?? 0
   }))
   const isChartAnimationActive = useChartAnimationGate(animateOnMount)
 
@@ -48,10 +46,10 @@ export function PriceChartCard({
     <section className={`surface-card panel-fixed flex flex-col p-5 sm:p-6 ${className}`}>
       <div className="flex min-w-0 flex-col gap-4 border-b border-line pb-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
-          <p className="eyebrow">Price path</p>
+          <p className="eyebrow">Price history</p>
           <div className="mt-2 flex flex-wrap items-end gap-3">
             <h3 className="text-xl font-semibold tracking-[-0.05em] text-text sm:text-2xl">{symbol}</h3>
-            <p className="truncate text-sm text-muted">{instrumentName}</p>
+            <p className="truncate text-sm text-muted">Market data from `trading-core`</p>
           </div>
         </div>
 

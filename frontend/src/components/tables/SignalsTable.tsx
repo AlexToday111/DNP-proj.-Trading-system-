@@ -9,7 +9,7 @@ export function SignalsTable({ rows }: { rows: Signal[] }) {
       rows={rows}
       rowKey={(row) => row.signalId}
       emptyTitle="No signals yet"
-      emptyDescription="Strategy output will appear here as the replay advances."
+      emptyDescription="Strategy signals from trading-core will appear here."
       columns={[
         { header: 'Signal', render: (row) => <span className="mono-data">{row.signalId}</span> },
         { header: 'Symbol', render: (row) => <span className="font-semibold">{row.symbol}</span> },
@@ -23,8 +23,7 @@ export function SignalsTable({ rows }: { rows: Signal[] }) {
             </span>
           )
         },
-        { header: 'Qty', align: 'right', render: (row) => <span className="mono-data">{row.quantity}</span> },
-        { header: 'Target', align: 'right', render: (row) => <span className="mono-data">{formatCurrency(row.targetPrice)}</span> },
+        { header: 'Price', align: 'right', render: (row) => <span className="mono-data">{formatCurrency(row.price)}</span> },
         { header: 'Reason', render: (row) => row.reason },
         { header: 'Time', align: 'right', render: (row) => <span className="mono-data">{formatTime(row.timestamp)}</span> }
       ]}
