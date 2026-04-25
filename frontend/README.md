@@ -1,26 +1,54 @@
-## Задачи frontend-разработчика
+# Porta Frontend
 
-### Ислам — Frontend / дезигн
+The Porta frontend is a React, TypeScript, and Vite dashboard for monitoring the trading-system MVP.
 
-Отвечает за пользовательский интерфейс системы и визуальное представление работы платформы.
+It visualizes the full system flow:
 
-Основные задачи:
-- реализовать frontend-dashboard;
-- продумать структуру интерфейса;
-- подключить frontend к backend (В идеале);
-- отобразить ключевые сущности системы в реальном времени;
-- подготовить интерфейс для демо и презентации проекта (Это тоже в идеале).
+```text
+MarketData -> Signal -> Order -> Execution -> Portfolio
+```
 
----
+The frontend is a client of Java `trading-core` only. It must not call Go services directly, consume Kafka, or query PostgreSQL.
 
-## Frontend
+```text
+Frontend -> Java trading-core -> Kafka / PostgreSQL / backend services
+```
 
-Frontend уже собран как отдельное приложение на `React + TypeScript + Vite`.
-Сейчас это dashboard для trading-system с навигацией по страницам, таблицами, карточками метрик, графиком цены и подключением к backend API.
+## Owner
 
-## Что уже есть
+| Member | Responsibility |
+| --- | --- |
+| Islam | Frontend / Design |
 
-Реализованы страницы:
+## Purpose
+
+The frontend provides a demo-ready operational dashboard for:
+
+- market data events;
+- trading signals;
+- orders;
+- execution results;
+- portfolio state;
+- positions;
+- service health;
+- system activity.
+
+It is designed to show how backend events move through Porta and how the Java core service exposes the current system state to users.
+
+## Current Application Stack
+
+- React 18
+- TypeScript
+- Vite
+- Recharts
+- Tailwind CSS
+- `clsx`
+- local hooks and reusable dashboard UI components
+
+## Pages
+
+The application currently contains these dashboard pages:
+
 - `Overview`
 - `Market Data`
 - `Signals`
@@ -29,142 +57,201 @@ Frontend уже собран как отдельное приложение на
 - `Portfolio`
 - `System Health`
 
-Что уже работает в интерфейсе:
-- основной layout с `TopBar` и `Sidebar`;
-- переключение страниц внутри dashboard;
-- выбор инструмента (`symbol`) из интерфейса;
-- синхронизация текущей страницы и выбранного инструмента через query params;
-- загрузка данных с backend;
-- отображение ошибки, если backend недоступен;
-- стартовые skeleton-состояния при первой загрузке;
-- единый visual flow системы: `MarketData → Signal → Order → Execution → Portfolio`.
+## Implemented UI Features
 
-## Что отображается по страницам
+- Main dashboard shell with `TopBar` and `Sidebar`.
+- Page navigation inside the dashboard.
+- Symbol selection from the interface.
+- URL query parameter synchronization for current page and selected symbol.
+- Backend API data loading.
+- Error state when the backend is unavailable.
+- Initial loading skeletons.
+- Shared visual flow for `MarketData -> Signal -> Order -> Execution -> Portfolio`.
+- Tables, metrics, summary cards, price chart, and activity feed components.
+
+## Page Responsibilities
 
 ### Overview
-- общие метрики портфеля: `Portfolio Value`, `Cash`, `Position Value`, `Total PnL`;
-- snapshot последней цепочки `Market data → Signal → Order → Execution`;
-- карточка состояния сервисов;
-- блок visual flow;
-- лента последних событий;
-- сводка по данным, пришедшим из `GET /dashboard`.
+
+Shows the high-level state of the platform:
+
+- portfolio value;
+- cash;
+- position value;
+- total PnL;
+- latest `MarketData -> Signal -> Order -> Execution` chain;
+- service health summary;
+- system flow visualization;
+- recent activity feed;
+- data summary from `GET /dashboard`.
 
 ### Market Data
-- количество market events;
-- текущий volume;
-- изменение цены за сессию;
-- график цены по инструменту;
-- поиск по `event id` и `symbol`;
-- таблица последних рыночных событий.
+
+Shows market event state:
+
+- market event count;
+- current volume;
+- session price move;
+- price chart by symbol;
+- search by `eventId` and `symbol`;
+- latest market data table.
 
 ### Signals
-- счётчики всех, `BUY` и `SELL` сигналов;
-- карточка последнего сигнала;
-- поиск по `signal id`, `symbol`, `reason`;
-- фильтр по стороне сигнала;
-- таблица сигналов.
+
+Shows strategy output:
+
+- total signal count;
+- `BUY` and `SELL` counts;
+- latest signal card;
+- search by `signalId`, `symbol`, and `reason`;
+- side filter;
+- signals table.
 
 ### Orders
-- количество ордеров;
-- число открытых ордеров;
-- число исполнений по выбранному инструменту;
-- summary-card по ордерам;
-- поиск по `order id`, `signal id`, `symbol`, `type`;
-- фильтр по статусу;
-- таблица ордеров.
+
+Shows order state:
+
+- total order count;
+- open order count;
+- execution count for the selected symbol;
+- order summary card;
+- search by `orderId`, `signalId`, `symbol`, and order type;
+- status filter;
+- orders table.
 
 ### Executions
-- количество исполнений;
-- средняя цена исполнения;
-- статус последнего исполнения;
-- карточка latest execution;
-- поиск по `execution id`, `order id`, `symbol`, `status`;
-- таблица исполнений.
+
+Shows execution results:
+
+- execution count;
+- average execution price;
+- latest execution status;
+- latest execution card;
+- search by `executionId`, `orderId`, `symbol`, and `status`;
+- executions table.
 
 ### Portfolio
-- метрики по `cash`, `portfolio value`, `position value`, `realized/unrealized/total PnL`;
-- количество открытых позиций;
-- таблица holdings с позициями портфеля.
+
+Shows portfolio state:
+
+- cash;
+- total portfolio value;
+- position value;
+- realized PnL;
+- unrealized PnL;
+- total PnL;
+- open position count;
+- holdings table.
 
 ### System Health
-- количество `healthy`, `degraded`, `down` сервисов;
-- карточка health-статусов сервисов;
-- visual flow системы;
-- activity feed по system/execution/portfolio событиям.
 
-## Подключение к backend
+Shows backend service state:
 
-Frontend уже работает не только на mock-структуре интерфейса, а с реальными HTTP-запросами.
+- healthy service count;
+- degraded service count;
+- down service count;
+- service status cards;
+- system flow visualization;
+- system, execution, and portfolio activity feed.
 
-Используются endpoints:
-- `GET /health`
-- `GET /system/status`
-- `GET /dashboard`
-- `GET /market-data`
-- `GET /market-data/:symbol/latest`
-- `GET /market-data/:symbol/history`
-- `GET /signals`
-- `GET /orders`
-- `GET /executions`
-- `GET /portfolio`
-- `GET /portfolio/positions`
+## Backend API Integration
 
-По умолчанию base URL:
+Default API base URL:
 
 ```text
 http://localhost:8080/api/v1
 ```
 
-Можно переопределить через переменную:
+Override it with:
 
 ```bash
 VITE_API_BASE_URL=http://localhost:8080/api/v1
 ```
 
-## Текущий стек
+The frontend currently expects Java `trading-core` to expose these endpoints:
 
-- `React 18`
-- `TypeScript`
-- `Vite`
-- `Recharts`
-- `Tailwind CSS`
-- `clsx`
-- локальные hooks и UI-компоненты для dashboard
-
-## Запуск
-
-```bash
-cd frontend
-npm install
-npm run dev
+```http
+GET /health
+GET /system/status
+GET /dashboard
+GET /market-data
+GET /market-data/:symbol/latest
+GET /market-data/:symbol/history
+GET /signals
+GET /orders
+GET /executions
+GET /portfolio
+GET /portfolio/positions
 ```
 
-Дополнительно:
+When combined with the default base URL, the real request path is:
 
-```bash
-npm run build
-npm run preview
-npm run typecheck
+```text
+http://localhost:8080/api/v1/dashboard
 ```
 
-## Структура данных, с которыми уже работает frontend
+## Data Models
 
-Фронтенд уже типизирован под следующие сущности:
+The frontend is typed around these core entities:
+
 - `MarketData`
 - `Signal`
 - `Order`
 - `Execution`
 - `PortfolioSnapshot`
 - `Position`
-- `SystemStatus / ServiceHealth`
+- `SystemStatus`
+- `ServiceHealth`
 
-Это значит, что основа для интеграции с backend уже есть: страницы, таблицы, карточки и маппинг ответов API собраны.
+This means the UI is already prepared for backend integration through stable API contracts.
 
-## Текущее состояние проекта
+## Local Development
 
-На текущий момент frontend уже можно использовать как рабочий demo-dashboard:
-- приложение запускается локально;
-- есть основной dashboard и все ключевые страницы;
-- данные запрашиваются у backend API;
-- интерфейс показывает состояние сервисов, market data, signals, orders, executions и portfolio;
-- архитектура готова к дальнейшему развитию, включая более частые обновления данных и возможное расширение REST/WebSocket-интеграции.
+Install dependencies:
+
+```bash
+cd frontend
+npm install
+```
+
+Run the development server:
+
+```bash
+npm run dev
+```
+
+Build production assets:
+
+```bash
+npm run build
+```
+
+Preview the production build:
+
+```bash
+npm run preview
+```
+
+Run type checking:
+
+```bash
+npm run typecheck
+```
+
+## MVP Status
+
+The frontend is usable as a local demo dashboard:
+
+- it starts as a standalone Vite app;
+- it contains all key dashboard pages;
+- it requests data from the Java backend API;
+- it displays service status, market data, signals, orders, executions, and portfolio state;
+- it is ready for more frequent refreshes or future SSE/WebSocket integration.
+
+## Current Assumptions and TODOs
+
+- Java `trading-core` remains the only backend entry point for the frontend.
+- The dashboard can use polling for MVP.
+- SSE or WebSocket can be added later for real-time updates.
+- If backend services are unavailable, the UI should continue to show clear loading and error states.
+- API contract updates should be reflected in the shared project documentation under [`../docs`](../docs).
