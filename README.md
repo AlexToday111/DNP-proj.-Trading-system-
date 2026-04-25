@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="frontend/public/Logo.png" alt="Porta logo" width="250"/>
+  <img src="frontend/src/assets/porta-logo.svg" alt="Porta logo" width="250"/>
 </p>
 
 <h1 align="center">Porta</h1>
