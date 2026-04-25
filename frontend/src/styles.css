@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 @layer base {
@@ -18,9 +18,7 @@
 
   body {
     @apply m-0 min-h-screen bg-canvas font-sans text-text;
-    background-image:
-      radial-gradient(circle at top left, rgba(15, 107, 75, 0.08), transparent 28%),
-      radial-gradient(circle at top right, rgba(185, 133, 55, 0.08), transparent 26%);
+    background: #282c35;
   }
 
   button,
@@ -33,15 +31,28 @@
   ::selection {
     @apply bg-accent/15 text-text;
   }
+
+  .recharts-wrapper:focus,
+  .recharts-wrapper *:focus {
+    outline: none;
+  }
+
+  .recharts-surface:focus,
+  .recharts-sector:focus,
+  .recharts-rectangle:focus,
+  .recharts-dot:focus,
+  .recharts-active-dot:focus {
+    outline: none;
+  }
 }
 
 @layer components {
   .surface-card {
-    @apply min-w-0 overflow-hidden rounded-card border border-line bg-surface shadow-soft;
+    @apply min-w-0 overflow-hidden rounded-card border border-transparent bg-surface shadow-soft;
   }
 
   .surface-card-hover {
-    @apply transition duration-200 hover:-translate-y-0.5 hover:shadow-card;
+    @apply transition duration-200 hover:border-line hover:shadow-card;
   }
 
   .panel-shell {
@@ -58,11 +69,11 @@
   }
 
   .eyebrow {
-    @apply text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted;
+    @apply text-[0.7rem] font-medium text-muted;
   }
 
   .mono-data {
-    @apply font-mono text-[0.92rem] tracking-[-0.04em];
+    @apply font-mono text-[0.92rem];
   }
 
   .scroll-shell {
@@ -71,15 +82,15 @@
   }
 
   .control-input {
-    @apply h-11 w-full rounded-2xl border border-line bg-shell px-4 text-sm text-text outline-none transition focus:border-accent focus:ring-4 focus:ring-accent/10;
+    @apply h-10 w-full rounded-panel border border-transparent bg-shell px-4 text-sm text-text outline-none transition placeholder:text-muted focus:border-accent focus:ring-4 focus:ring-accent/10;
   }
 
   .control-select {
-    @apply h-11 rounded-2xl border border-line bg-shell px-4 text-sm text-text outline-none transition focus:border-accent focus:ring-4 focus:ring-accent/10;
+    @apply h-10 rounded-panel border border-line bg-surface px-4 text-sm text-text outline-none transition focus:border-accent focus:ring-4 focus:ring-accent/10;
   }
 
   .control-button {
-    @apply inline-flex h-11 items-center justify-center rounded-2xl border border-line bg-surface px-4 text-sm font-semibold text-text transition hover:border-accent/30 hover:bg-accent/5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/10;
+    @apply inline-flex h-10 items-center justify-center rounded-panel border border-line bg-surface px-4 text-sm font-semibold text-text transition hover:border-accent/40 hover:bg-shell focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/10;
   }
 
   .status-dot {

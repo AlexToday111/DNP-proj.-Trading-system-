@@ -2,6 +2,7 @@ import { AppLayout } from './components/layout/AppLayout'
 import { Sidebar } from './components/layout/Sidebar'
 import { TopBar } from './components/layout/TopBar'
 import { useDashboardState } from './hooks/useDashboardState'
+import { useFirstPageVisit } from './hooks/useFirstPageVisit'
 import { serviceHealth } from './data/mockTradingData'
 import { ExecutionsPage } from './pages/ExecutionsPage'
 import { MarketDataPage } from './pages/MarketDataPage'
@@ -14,12 +15,14 @@ import { SystemHealthPage } from './pages/SystemHealthPage'
 
 function App() {
   const dashboard = useDashboardState()
+  const isFirstPageVisit = useFirstPageVisit(dashboard.activePage)
 
   const page = (() => {
     switch (dashboard.activePage) {
       case 'overview':
         return (
           <OverviewPage
+            animateOnMount={isFirstPageVisit}
             isBooting={dashboard.isBooting}
             instrument={dashboard.selectedInstrument}
             currentTick={dashboard.currentTick}
@@ -40,6 +43,7 @@ function App() {
       case 'market-data':
         return (
           <MarketDataPage
+            animateOnMount={isFirstPageVisit}
             instrument={dashboard.selectedInstrument}
             ticks={dashboard.selectedTicks}
             currentTick={dashboard.currentTick}
@@ -63,10 +67,16 @@ function App() {
           />
         )
       case 'executions':
-        return <ExecutionsPage executions={dashboard.visibleExecutions} />
+        return (
+          <ExecutionsPage
+            animateOnMount={isFirstPageVisit}
+            executions={dashboard.visibleExecutions}
+          />
+        )
       case 'portfolio':
         return (
           <PortfolioPage
+            animateOnMount={isFirstPageVisit}
             currentSnapshot={dashboard.portfolioSnapshot}
             portfolioSeries={dashboard.portfolioSeries}
             fillRatio={dashboard.fillRatio}

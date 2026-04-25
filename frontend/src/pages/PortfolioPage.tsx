@@ -6,12 +6,14 @@ import { formatCompactCurrency, formatCurrency } from '../lib/utils'
 import { type PortfolioSnapshot } from '../types/trading'
 
 interface PortfolioPageProps {
+  animateOnMount: boolean
   currentSnapshot: PortfolioSnapshot
   portfolioSeries: PortfolioSnapshot[]
   fillRatio: number
 }
 
 export function PortfolioPage({
+  animateOnMount,
   currentSnapshot,
   portfolioSeries,
   fillRatio
@@ -20,12 +22,17 @@ export function PortfolioPage({
     <div className="space-y-4">
       <div className="grid gap-4 xl:grid-cols-12">
         <HeroPortfolioCard
+          animateOnMount={animateOnMount}
           snapshots={portfolioSeries}
           currentSnapshot={currentSnapshot}
           fillRatio={fillRatio}
           className="xl:col-span-5"
         />
-        <PortfolioTrendCard snapshots={portfolioSeries} className="xl:col-span-7" />
+        <PortfolioTrendCard
+          animateOnMount={animateOnMount}
+          snapshots={portfolioSeries}
+          className="xl:col-span-7"
+        />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">

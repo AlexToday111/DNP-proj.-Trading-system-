@@ -7,9 +7,11 @@ import {
   XAxis,
   YAxis
 } from 'recharts'
+import { useChartAnimationGate } from '../../hooks/useChartAnimationGate'
 import { formatCurrency, formatNumber, formatPercent, formatShortTime } from '../../lib/utils'
 
 interface PriceChartCardProps {
+  animateOnMount?: boolean
   symbol: string
   instrumentName: string
   currentPrice: number
@@ -25,6 +27,7 @@ interface PriceChartCardProps {
 }
 
 export function PriceChartCard({
+  animateOnMount = true,
   symbol,
   instrumentName,
   currentPrice,
@@ -39,6 +42,7 @@ export function PriceChartCard({
     price: Number(tick.price.toFixed(2)),
     volume: tick.volume
   }))
+  const isChartAnimationActive = useChartAnimationGate(animateOnMount)
 
   return (
     <section className={`surface-card panel-fixed flex flex-col p-5 sm:p-6 ${className}`}>
@@ -75,29 +79,29 @@ export function PriceChartCard({
 
       <div className="mt-4 min-h-[220px] flex-1 xl:min-h-0">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <AreaChart accessibilityLayer={false} data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id={`price-gradient-${symbol}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#0f6b4b" stopOpacity={0.28} />
-                <stop offset="100%" stopColor="#0f6b4b" stopOpacity={0.02} />
+                <stop offset="0%" stopColor="#1fcb4f" stopOpacity={0.24} />
+                <stop offset="100%" stopColor="#1fcb4f" stopOpacity={0.02} />
               </linearGradient>
             </defs>
-            <CartesianGrid stroke="#ece5da" vertical={false} />
+            <CartesianGrid stroke="#343943" vertical={false} />
             <XAxis
               dataKey="time"
               tickLine={false}
               axisLine={false}
-              tick={{ fill: '#687166', fontSize: 12 }}
+              tick={{ fill: '#9e9e9e', fontSize: 12 }}
             />
             <YAxis
               tickLine={false}
               axisLine={false}
               width={72}
-              tick={{ fill: '#687166', fontSize: 12 }}
+              tick={{ fill: '#9e9e9e', fontSize: 12 }}
               tickFormatter={(value) => `$${value}`}
             />
             <Tooltip
-              cursor={{ stroke: '#0f6b4b', strokeDasharray: '4 4' }}
+              cursor={{ stroke: '#1fcb4f', strokeDasharray: '4 4' }}
               formatter={(value, name) => {
                 const numericValue = Array.isArray(value) ? Number(value[0] ?? 0) : Number(value ?? 0)
                 return name === 'price'
@@ -105,19 +109,23 @@ export function PriceChartCard({
                   : [formatNumber(numericValue), 'Volume']
               }}
               contentStyle={{
-                borderRadius: 18,
-                border: '1px solid #e9e2d8',
-                boxShadow: '0 12px 30px rgba(28, 35, 26, 0.08)'
+                background: '#1a1c22',
+                borderRadius: 8,
+                border: '1px solid #343943',
+                color: '#ffffff'
               }}
             />
             <Area
               type="monotone"
               dataKey="price"
-              stroke="#0f6b4b"
+              stroke="#1fcb4f"
               strokeWidth={2.5}
               fill={`url(#price-gradient-${symbol})`}
               dot={false}
-              activeDot={{ r: 5, fill: '#0f6b4b' }}
+              activeDot={{ r: 5, fill: '#1fcb4f' }}
+              animationDuration={900}
+              animationEasing="ease-out"
+              isAnimationActive={isChartAnimationActive}
             />
           </AreaChart>
         </ResponsiveContainer>

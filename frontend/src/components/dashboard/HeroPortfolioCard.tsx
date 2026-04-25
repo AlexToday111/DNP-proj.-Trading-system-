@@ -4,10 +4,13 @@ import {
   ResponsiveContainer,
   Tooltip
 } from 'recharts'
+import { useChartAnimationGate } from '../../hooks/useChartAnimationGate'
+import { useAnimatedNumber } from '../../hooks/useAnimatedNumber'
 import { formatCurrency, formatPercent, formatShortTime, toneFromNumber } from '../../lib/utils'
 import { type PortfolioSnapshot } from '../../types/trading'
 
 interface HeroPortfolioCardProps {
+  animateOnMount?: boolean
   snapshots: PortfolioSnapshot[]
   currentSnapshot: PortfolioSnapshot
   fillRatio: number
@@ -15,6 +18,7 @@ interface HeroPortfolioCardProps {
 }
 
 export function HeroPortfolioCard({
+  animateOnMount = true,
   snapshots,
   currentSnapshot,
   fillRatio,
@@ -24,6 +28,13 @@ export function HeroPortfolioCard({
     time: formatShortTime(snapshot.updatedAt),
     totalValue: Number(snapshot.totalValue.toFixed(2))
   }))
+  const animatedTotalValue = useAnimatedNumber(currentSnapshot.totalValue)
+  const animatedTotalPnl = useAnimatedNumber(currentSnapshot.totalPnl)
+  const animatedFillRatio = useAnimatedNumber(fillRatio)
+  const animatedCashBalance = useAnimatedNumber(currentSnapshot.cashBalance)
+  const animatedMarketValue = useAnimatedNumber(currentSnapshot.marketValue)
+  const animatedPositions = useAnimatedNumber(currentSnapshot.positions.length)
+  const isChartAnimationActive = useChartAnimationGate(animateOnMount)
 
   return (
     <section
@@ -36,7 +47,7 @@ export function HeroPortfolioCard({
               Portfolio value
             </p>
             <h3 className="mt-3 truncate font-mono text-3xl font-semibold tracking-[-0.06em] sm:text-4xl">
-              {formatCurrency(currentSnapshot.totalValue)}
+              {formatCurrency(animatedTotalValue)}
             </h3>
           </div>
 
@@ -44,12 +55,12 @@ export function HeroPortfolioCard({
             <div className="rounded-[20px] border border-white/15 bg-white/10 px-4 py-3 backdrop-blur">
               <p className="text-white/70">Total PnL</p>
               <p className="mt-1 truncate font-mono text-base font-semibold sm:text-lg">
-                {formatCurrency(currentSnapshot.totalPnl)}
+                {formatCurrency(animatedTotalPnl)}
               </p>
             </div>
             <div className="rounded-[20px] border border-white/15 bg-white/10 px-4 py-3 backdrop-blur">
               <p className="text-white/70">Fill ratio</p>
-              <p className="mt-1 font-mono text-lg font-semibold">{fillRatio}%</p>
+              <p className="mt-1 font-mono text-lg font-semibold">{Math.round(animatedFillRatio)}%</p>
             </div>
           </div>
         </div>
@@ -57,21 +68,21 @@ export function HeroPortfolioCard({
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="min-w-0 rounded-[20px] border border-white/12 bg-white/8 px-4 py-3">
             <p className="text-white/70">Cash</p>
-            <p className="mt-1 truncate font-mono text-base sm:text-lg">{formatCurrency(currentSnapshot.cashBalance)}</p>
+            <p className="mt-1 truncate font-mono text-base sm:text-lg">{formatCurrency(animatedCashBalance)}</p>
           </div>
           <div className="min-w-0 rounded-[20px] border border-white/12 bg-white/8 px-4 py-3">
             <p className="text-white/70">Market value</p>
-            <p className="mt-1 truncate font-mono text-base sm:text-lg">{formatCurrency(currentSnapshot.marketValue)}</p>
+            <p className="mt-1 truncate font-mono text-base sm:text-lg">{formatCurrency(animatedMarketValue)}</p>
           </div>
           <div className="min-w-0 rounded-[20px] border border-white/12 bg-white/8 px-4 py-3">
             <p className="text-white/70">Open positions</p>
-            <p className="mt-1 font-mono text-lg">{currentSnapshot.positions.length}</p>
+            <p className="mt-1 font-mono text-lg">{Math.round(animatedPositions)}</p>
           </div>
         </div>
 
         <div className="h-20 sm:h-24 xl:h-20">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData}>
+            <AreaChart accessibilityLayer={false} data={chartData}>
               <Tooltip
                 formatter={(value) => {
                   const numericValue = Array.isArray(value) ? Number(value[0] ?? 0) : Number(value ?? 0)
@@ -92,6 +103,9 @@ export function HeroPortfolioCard({
                 strokeWidth={2.5}
                 fill="rgba(255,255,255,0.12)"
                 dot={false}
+                isAnimationActive={isChartAnimationActive}
+                animationDuration={900}
+                animationEasing="ease-out"
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -100,7 +114,7 @@ export function HeroPortfolioCard({
         <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-white/75">
           <span>Replay trend</span>
           <span className={toneFromNumber(currentSnapshot.totalPnl) === 'negative' ? 'text-[#ffd5cc]' : 'text-[#dff7e8]'}>
-            {formatPercent((currentSnapshot.totalPnl / 100000) * 100, 2)}
+            {formatPercent((animatedTotalPnl / 100000) * 100, 2)}
           </span>
         </div>
       </div>

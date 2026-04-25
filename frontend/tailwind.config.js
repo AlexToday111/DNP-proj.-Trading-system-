@@ -4,32 +4,32 @@ export default {
   theme: {
     extend: {
       colors: {
-        canvas: '#f4efe8',
-        shell: '#fbf8f4',
-        surface: '#ffffff',
-        line: '#e9e2d8',
-        text: '#1f2a20',
-        muted: '#687166',
+        canvas: '#282c35',
+        shell: '#222730',
+        surface: '#1a1c22',
+        line: '#343943',
+        text: '#ffffff',
+        muted: '#9e9e9e',
         accent: {
-          DEFAULT: '#0f6b4b',
-          soft: '#e7f5ed',
-          strong: '#0a4f37'
+          DEFAULT: '#1fcb4f',
+          soft: 'rgba(31, 203, 79, 0.12)',
+          strong: '#16a63d'
         },
-        positive: '#167c5a',
-        negative: '#b85e49',
-        warning: '#b98537'
+        positive: '#1fcb4f',
+        negative: '#ff6b57',
+        warning: '#ffc01e'
       },
       fontFamily: {
         sans: ['Manrope', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace']
       },
       borderRadius: {
-        card: '28px',
-        panel: '22px'
+        card: '8px',
+        panel: '7px'
       },
       boxShadow: {
-        card: '0 20px 60px rgba(28, 35, 26, 0.08)',
-        soft: '0 12px 30px rgba(28, 35, 26, 0.06)'
+        card: '0 24px 60px rgba(0, 0, 0, 0.22)',
+        soft: '0 12px 28px rgba(0, 0, 0, 0.2)'
       },
       keyframes: {
         'fade-up': {

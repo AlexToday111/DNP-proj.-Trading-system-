@@ -7,6 +7,7 @@ import { formatCompactNumber, formatCurrency, formatPercent } from '../lib/utils
 import { type Instrument, type MarketTick } from '../types/trading'
 
 interface MarketDataPageProps {
+  animateOnMount: boolean
   instrument: Instrument
   ticks: MarketTick[]
   currentTick: MarketTick
@@ -14,6 +15,7 @@ interface MarketDataPageProps {
 }
 
 export function MarketDataPage({
+  animateOnMount,
   instrument,
   ticks,
   currentTick,
@@ -55,6 +57,7 @@ export function MarketDataPage({
       </div>
 
       <PriceChartCard
+        animateOnMount={animateOnMount}
         symbol={instrument.symbol}
         instrumentName={instrument.name}
         currentPrice={currentTick.price}

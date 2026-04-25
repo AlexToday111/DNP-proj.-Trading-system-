@@ -36,7 +36,7 @@ export function ActivityFeed({ events, className = '' }: ActivityFeedProps) {
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="eyebrow">{event.kind}</span>
-                <span className="rounded-full bg-white/80 px-2 py-1 font-mono text-[11px] text-muted">
+                <span className="rounded-full bg-shell px-2 py-1 font-mono text-[11px] text-muted">
                   {formatTime(event.timestamp)}
                 </span>
               </div>

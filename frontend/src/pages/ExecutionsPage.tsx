@@ -7,15 +7,17 @@ import { formatSignedBasisPoints } from '../lib/utils'
 import { type Execution } from '../types/trading'
 
 interface ExecutionsPageProps {
+  animateOnMount: boolean
   executions: Execution[]
 }
 
-export function ExecutionsPage({ executions }: ExecutionsPageProps) {
+export function ExecutionsPage({ animateOnMount, executions }: ExecutionsPageProps) {
   const [query, setQuery] = useState('')
   const deferredQuery = useDeferredValue(query)
   const avgSlippage =
     executions.reduce((accumulator, execution) => accumulator + execution.slippageBps, 0) /
     Math.max(executions.length, 1)
+  const avgSlippageRounded = Number(avgSlippage.toFixed(1))
 
   const rows = useMemo(
     () =>
@@ -32,11 +34,16 @@ export function ExecutionsPage({ executions }: ExecutionsPageProps) {
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-3">
         <MetricCard label="Executions" value={String(executions.length)} detail="Simulated fills visible in replay" />
-        <MetricCard label="Average slippage" value={formatSignedBasisPoints(Number(avgSlippage.toFixed(1)))} detail="Lower is better for buy-side entries" />
+        <MetricCard
+          label="Average slippage"
+          value={formatSignedBasisPoints(avgSlippageRounded)}
+          detail="Basis points; 1 bps equals 0.01%"
+          tone={avgSlippageRounded < 0 ? 'negative' : 'positive'}
+        />
         <MetricCard label="Venues" value={String(new Set(executions.map((execution) => execution.venue)).size)} detail="Execution destinations used by simulator" />
       </div>
 
-      <ExecutionSlippageCard executions={executions} />
+      <ExecutionSlippageCard animateOnMount={animateOnMount} executions={executions} />
 
       <FilterBar
         searchValue={query}
