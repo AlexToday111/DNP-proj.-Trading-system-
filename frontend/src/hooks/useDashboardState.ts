@@ -208,7 +208,7 @@ export function useDashboardState() {
 
   useEffect(() => {
     const currentPage = navigationItems.find((item) => item.id === location.page)?.label ?? 'Overview'
-    document.title = `${currentPage} · ${location.symbol} · DNP Trading Terminal`
+    document.title = `${currentPage} · ${location.symbol} · Porta`
   }, [location.page, location.symbol])
 
   return {

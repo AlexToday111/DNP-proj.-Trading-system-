@@ -15,7 +15,7 @@ export function StatusPill({ status }: StatusPillProps) {
   return (
     <div
       className={cn(
-        'inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-semibold',
+        'inline-flex items-center gap-2 rounded-panel border px-3.5 py-2 text-sm font-semibold',
         status === 'live' && 'border-accent/15 bg-accent/5 text-accent',
         status === 'paused' && 'border-warning/20 bg-warning/10 text-warning',
         status === 'disconnected' && 'border-negative/20 bg-negative/10 text-negative'

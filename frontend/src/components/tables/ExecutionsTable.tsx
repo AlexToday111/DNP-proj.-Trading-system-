@@ -1,5 +1,5 @@
 import { DataTable } from './DataTable'
-import { formatCurrency, formatSignedBasisPoints, formatTime, toneFromNumber } from '../../lib/utils'
+import { formatCurrency, formatSignedBasisPoints, formatTime } from '../../lib/utils'
 import { type Execution } from '../../types/trading'
 
 export function ExecutionsTable({ rows }: { rows: Execution[] }) {
@@ -21,7 +21,7 @@ export function ExecutionsTable({ rows }: { rows: Execution[] }) {
           header: 'Slippage',
           align: 'right',
           render: (row) => (
-            <span className={`mono-data ${toneFromNumber(-row.slippageBps) === 'negative' ? 'text-negative' : 'text-positive'}`}>
+            <span className={`mono-data ${row.slippageBps < 0 ? 'text-negative' : 'text-positive'}`}>
               {formatSignedBasisPoints(row.slippageBps)}
             </span>
           )

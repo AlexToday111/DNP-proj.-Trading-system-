@@ -1,7 +1,7 @@
 import { navigationItems } from '../../data/mockTradingData'
-import { formatShortTime } from '../../lib/utils'
+import portaLogo from '../../assets/porta-logo.svg'
 import { type PageId, type SimulationStatus } from '../../types/trading'
-import { StatusPill } from '../ui/StatusPill'
+import { AppIcon, type AppIconName } from '../ui/AppIcon'
 
 interface SidebarProps {
   activePage: PageId
@@ -11,26 +11,33 @@ interface SidebarProps {
 }
 
 export function Sidebar({ activePage, status, timestamp, onNavigate }: SidebarProps) {
-  return (
-    <aside className="surface-card flex h-full flex-col gap-6 bg-white/90 p-5 backdrop-blur sm:p-6">
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-lg font-semibold text-white shadow-soft">
-            DT
-          </div>
-          <div>
-            <p className="eyebrow">DNP Project S26</p>
-            <h1 className="text-xl font-semibold tracking-[-0.04em] text-text">Trading Terminal</h1>
-          </div>
-        </div>
+  void status
+  void timestamp
 
-        <div className="flex flex-wrap items-center gap-3">
-          <StatusPill status={status} />
-          <p className="mono-data text-sm text-muted">UTC {formatShortTime(timestamp)}</p>
+  const iconMap: Record<PageId, AppIconName> = {
+    overview: 'activity',
+    'market-data': 'database',
+    signals: 'signal',
+    orders: 'list',
+    executions: 'play',
+    portfolio: 'briefcase',
+    'system-health': 'gauge',
+    settings: 'settings'
+  }
+
+  return (
+    <aside className="flex h-full flex-col gap-9 bg-surface px-7 py-8">
+      <div>
+        <div className="flex items-center gap-3">
+          <img src={portaLogo} alt="Porta logo" className="h-8 w-8 shrink-0" />
+          <div>
+            <h1 className="text-xl font-semibold text-text">Porta</h1>
+            <p className="sr-only">Porta trading terminal</p>
+          </div>
         </div>
       </div>
 
-      <nav aria-label="Primary" className="grid gap-1.5">
+      <nav aria-label="Primary" className="grid gap-5">
         {navigationItems.map((item) => {
           const isActive = item.id === activePage
           return (
@@ -39,27 +46,21 @@ export function Sidebar({ activePage, status, timestamp, onNavigate }: SidebarPr
               type="button"
               onClick={() => onNavigate(item.id)}
               aria-current={isActive ? 'page' : undefined}
-              className={`rounded-[20px] px-4 py-3 text-left transition ${
+              className={`group relative flex min-h-8 items-center gap-4 rounded-panel text-left text-sm transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/20 ${
                 isActive
-                  ? 'bg-accent text-white shadow-soft'
-                  : 'text-text hover:bg-shell'
+                  ? 'font-semibold text-accent'
+                  : 'text-muted hover:text-text'
               }`}
             >
-              <div className="text-sm font-semibold">{item.label}</div>
-              <div className={`mt-1 text-xs ${isActive ? 'text-white/80' : 'text-muted'}`}>
-                {item.description}
-              </div>
+              <span className={`grid h-5 w-5 place-items-center ${isActive ? 'text-accent' : 'text-muted group-hover:text-text'}`}>
+                <AppIcon name={iconMap[item.id]} className="h-5 w-5" />
+              </span>
+              <span className="truncate">{item.label}</span>
+              {isActive ? <span className="absolute -right-7 h-5 w-1.5 rounded-l bg-warning" /> : null}
             </button>
           )
         })}
       </nav>
-
-      <div className="mt-auto rounded-[22px] border border-line bg-shell p-4">
-        <p className="eyebrow">Workspace note</p>
-        <p className="mt-2 text-sm leading-6 text-muted">
-          Overview stays intentionally quiet. Detailed logs, routing state, and service internals are pushed into their own pages.
-        </p>
-      </div>
     </aside>
   )
 }

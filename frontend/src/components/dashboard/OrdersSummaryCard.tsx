@@ -46,7 +46,7 @@ export function OrdersSummaryCard({
           <p className="text-sm font-semibold text-text">Fill ratio</p>
           <p className="mono-data text-base text-text">{fillRatio}%</p>
         </div>
-        <div className="mt-3 h-2 rounded-full bg-white">
+        <div className="mt-3 h-2 rounded-full bg-shell">
           <div
             className="h-2 rounded-full bg-accent transition-all"
             style={{ width: `${fillRatio}%` }}
