@@ -13,19 +13,53 @@
 </p>
 
 ---
-
 <h2 align="center">Team</h2>
 
-| Member | Responsibility |
-| --- | --- |
-| Ernest | Java Backend |
-| Nikita | Golang Backend |
-| Zakhar | Golang Backend |
-| Islam | Frontend / Design |
-| Amina | DevOps / Infrastructure |
-| Anya | TBD |
-| Katya | Presentation |
-| Masha | TBD |
+<div align="center">
+
+<table>
+  <tr>
+    <th>Development</th>
+  </tr>
+
+  <tr>
+    <td>
+      <table>
+        <tr>
+          <td><b>Ernest</b><br>Java Backend</td>
+          <td><b>Nikita</b><br>Golang Backend</td>
+          <td><b>Zakhar</b><br>Golang Backend</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      <table>
+        <tr>
+          <td><b>Islam</b><br>Frontend / Design</td>
+          <td><b>Amina</b><br>DevOps / Infrastructure</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<br>
+
+<table>
+  <tr>
+    <th colspan="3">Other</th>
+  </tr>
+  <tr>
+    <td><b>Anya</b><br>Presentation</td>
+    <td><b>Katya</b><br>Presentation</td>
+    <td><b>Masha</b><br>Q&amp;A engineer</td>
+  </tr>
+</table>
+
+</div>
 
 ---
 
