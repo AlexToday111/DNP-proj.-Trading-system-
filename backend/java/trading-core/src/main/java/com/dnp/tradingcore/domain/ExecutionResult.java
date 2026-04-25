@@ -11,6 +11,8 @@ public record ExecutionResult(
         BigDecimal quantity,
         BigDecimal executedPrice,
         ExecutionStatus status,
+        String marketDataEventId,
+        Instant priceTimestamp,
         Instant timestamp
 ) {
 }

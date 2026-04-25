@@ -22,6 +22,7 @@ public class SignalEntity {
 
     private BigDecimal quantity;
     private BigDecimal targetPrice;
+    private String reason;
     private Instant timestamp;
 
     public String getSignalId() {
@@ -62,6 +63,14 @@ public class SignalEntity {
 
     public void setTargetPrice(BigDecimal targetPrice) {
         this.targetPrice = targetPrice;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
     }
 
     public Instant getTimestamp() {

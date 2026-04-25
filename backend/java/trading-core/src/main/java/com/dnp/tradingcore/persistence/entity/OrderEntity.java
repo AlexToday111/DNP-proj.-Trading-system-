@@ -22,6 +22,7 @@ public class OrderEntity {
     private OrderSide side;
 
     private BigDecimal quantity;
+    private String orderType;
     private BigDecimal requestedPrice;
     private Instant timestamp;
     private String status;
@@ -64,6 +65,14 @@ public class OrderEntity {
 
     public void setQuantity(BigDecimal quantity) {
         this.quantity = quantity;
+    }
+
+    public String getOrderType() {
+        return orderType;
+    }
+
+    public void setOrderType(String orderType) {
+        this.orderType = orderType;
     }
 
     public BigDecimal getRequestedPrice() {

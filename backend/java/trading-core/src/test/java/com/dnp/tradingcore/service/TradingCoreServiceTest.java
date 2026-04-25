@@ -4,13 +4,19 @@ import com.dnp.tradingcore.domain.ExecutionResult;
 import com.dnp.tradingcore.domain.ExecutionStatus;
 import com.dnp.tradingcore.domain.Order;
 import com.dnp.tradingcore.domain.OrderSide;
+import com.dnp.tradingcore.domain.OrderStatus;
+import com.dnp.tradingcore.domain.OrderType;
 import com.dnp.tradingcore.domain.Signal;
+import com.dnp.tradingcore.dto.MarketDataMessage;
 import com.dnp.tradingcore.messaging.OrderPublisher;
 import com.dnp.tradingcore.persistence.entity.OrderEntity;
 import com.dnp.tradingcore.persistence.entity.PortfolioEntity;
+import com.dnp.tradingcore.persistence.entity.PositionEntity;
 import com.dnp.tradingcore.persistence.repository.ExecutionResultRepository;
+import com.dnp.tradingcore.persistence.repository.MarketDataRepository;
 import com.dnp.tradingcore.persistence.repository.OrderRepository;
 import com.dnp.tradingcore.persistence.repository.PortfolioRepository;
+import com.dnp.tradingcore.persistence.repository.PositionRepository;
 import com.dnp.tradingcore.persistence.repository.SignalRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,6 +45,10 @@ class TradingCoreServiceTest {
     @Mock
     private PortfolioRepository portfolioRepository;
     @Mock
+    private MarketDataRepository marketDataRepository;
+    @Mock
+    private PositionRepository positionRepository;
+    @Mock
     private OrderPublisher orderPublisher;
 
     private TradingCoreService service;
@@ -50,6 +60,8 @@ class TradingCoreServiceTest {
                 orderRepository,
                 executionResultRepository,
                 portfolioRepository,
+                marketDataRepository,
+                positionRepository,
                 orderPublisher
         );
     }
@@ -62,6 +74,7 @@ class TradingCoreServiceTest {
                 OrderSide.BUY,
                 new BigDecimal("0.50"),
                 new BigDecimal("62000"),
+                "PRICE_CROSSOVER",
                 Instant.parse("2026-04-13T09:00:00Z")
         );
 
@@ -70,9 +83,15 @@ class TradingCoreServiceTest {
         assertThat(order.signalId()).isEqualTo("s-1");
         assertThat(order.symbol()).isEqualTo("BTCUSDT");
         assertThat(order.side()).isEqualTo(OrderSide.BUY);
+        assertThat(order.orderType()).isEqualTo(OrderType.MARKET);
+        assertThat(order.limitPrice()).isNull();
+        assertThat(order.status()).isEqualTo(OrderStatus.NEW);
 
         verify(signalRepository).save(any());
-        verify(orderRepository).save(any());
+        ArgumentCaptor<OrderEntity> orderCaptor = ArgumentCaptor.forClass(OrderEntity.class);
+        verify(orderRepository).save(orderCaptor.capture());
+        assertThat(orderCaptor.getValue().getOrderType()).isEqualTo("MARKET");
+        assertThat(orderCaptor.getValue().getStatus()).isEqualTo("NEW");
         verify(orderPublisher).publish(order);
     }
 
@@ -88,6 +107,8 @@ class TradingCoreServiceTest {
                 new BigDecimal("1.0"),
                 new BigDecimal("100.0"),
                 ExecutionStatus.FILLED,
+                "md-1",
+                Instant.parse("2026-04-13T09:29:58Z"),
                 Instant.parse("2026-04-13T09:30:00Z")
         );
 
@@ -102,6 +123,7 @@ class TradingCoreServiceTest {
         assertThat(saved.getPositions().get(0).getSymbol()).isEqualTo("BTCUSDT");
         assertThat(saved.getPositions().get(0).getQuantity()).isEqualByComparingTo("1.0");
         assertThat(saved.getPositions().get(0).getAveragePrice()).isEqualByComparingTo("100.00000000");
+        assertThat(saved.getPositions().get(0).getLatestPrice()).isEqualByComparingTo("100.0");
     }
 
     @Test
@@ -111,10 +133,11 @@ class TradingCoreServiceTest {
         portfolio.setCashBalance(new BigDecimal("900.00"));
         portfolio.setRealizedPnl(BigDecimal.ZERO);
 
-        com.dnp.tradingcore.persistence.entity.PositionEntity position = new com.dnp.tradingcore.persistence.entity.PositionEntity();
+        PositionEntity position = new PositionEntity();
         position.setSymbol("BTCUSDT");
         position.setQuantity(new BigDecimal("1.0"));
         position.setAveragePrice(new BigDecimal("100.0"));
+        position.setLatestPrice(new BigDecimal("100.0"));
         position.setUnrealizedPnl(BigDecimal.ZERO);
         position.setPortfolio(portfolio);
         portfolio.getPositions().add(position);
@@ -130,6 +153,8 @@ class TradingCoreServiceTest {
                 new BigDecimal("1.0"),
                 new BigDecimal("120.0"),
                 ExecutionStatus.FILLED,
+                "md-2",
+                Instant.parse("2026-04-13T09:59:58Z"),
                 Instant.parse("2026-04-13T10:00:00Z")
         );
 
@@ -142,5 +167,42 @@ class TradingCoreServiceTest {
         assertThat(saved.getCashBalance()).isEqualByComparingTo("1020.00");
         assertThat(saved.getRealizedPnl()).isEqualByComparingTo("20.00");
         assertThat(saved.getPositions().get(0).getQuantity()).isEqualByComparingTo("0");
+    }
+
+    @Test
+    void processMarketData_updatesOpenPositionUnrealizedPnl() {
+        PortfolioEntity portfolio = new PortfolioEntity();
+        portfolio.setId(TradingCoreService.DEFAULT_PORTFOLIO_ID);
+        portfolio.setCashBalance(new BigDecimal("99900.00"));
+        portfolio.setRealizedPnl(BigDecimal.ZERO);
+
+        PositionEntity position = new PositionEntity();
+        position.setSymbol("BTCUSDT");
+        position.setQuantity(new BigDecimal("2.0"));
+        position.setAveragePrice(new BigDecimal("100.0"));
+        position.setLatestPrice(new BigDecimal("100.0"));
+        position.setUnrealizedPnl(BigDecimal.ZERO);
+        position.setPortfolio(portfolio);
+        portfolio.getPositions().add(position);
+
+        when(portfolioRepository.findById(TradingCoreService.DEFAULT_PORTFOLIO_ID)).thenReturn(Optional.of(portfolio));
+        when(positionRepository.findByPortfolioIdAndSymbolIgnoreCase(TradingCoreService.DEFAULT_PORTFOLIO_ID, "BTCUSDT"))
+                .thenReturn(Optional.of(position));
+
+        service.processMarketData(new MarketDataMessage(
+                "md-3",
+                "BTCUSDT",
+                new BigDecimal("110.0"),
+                new BigDecimal("1000"),
+                Instant.parse("2026-04-13T10:05:00Z")
+        ));
+
+        verify(marketDataRepository).save(any());
+        ArgumentCaptor<PortfolioEntity> captor = ArgumentCaptor.forClass(PortfolioEntity.class);
+        verify(portfolioRepository).save(captor.capture());
+
+        PositionEntity savedPosition = captor.getValue().getPositions().get(0);
+        assertThat(savedPosition.getLatestPrice()).isEqualByComparingTo("110.0");
+        assertThat(savedPosition.getUnrealizedPnl()).isEqualByComparingTo("20.00");
     }
 }

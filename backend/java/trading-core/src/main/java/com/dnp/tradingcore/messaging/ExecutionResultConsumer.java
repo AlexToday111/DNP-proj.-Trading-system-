@@ -18,7 +18,7 @@ public class ExecutionResultConsumer {
         this.tradingCoreService = tradingCoreService;
     }
 
-    @KafkaListener(topics = "${app.kafka.topics.execution-results}", groupId = "${spring.kafka.consumer.group-id}")
+    @KafkaListener(topics = "${app.kafka.topics.execution-result}", groupId = "${spring.kafka.consumer.group-id}")
     public void consume(String payload) {
         ExecutionResultMessage message = fromPayload(payload);
 
@@ -30,6 +30,8 @@ public class ExecutionResultConsumer {
                 message.quantity(),
                 message.executedPrice(),
                 message.status(),
+                message.marketDataEventId(),
+                message.priceTimestamp(),
                 message.timestamp()
         );
 
