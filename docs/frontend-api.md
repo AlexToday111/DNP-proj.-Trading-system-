@@ -2,7 +2,7 @@
 
 This document describes the intended frontend-facing API exposed by Java `trading-core`.
 
-The frontend must call only Java `trading-core`. It must not call Go services, Kafka, or PostgreSQL directly.
+The frontend must call only Java `trading-core`. It must not call Java `strategy-service`, Go services, Kafka, or PostgreSQL directly.
 
 Base path:
 
@@ -72,6 +72,11 @@ GET /api/v1/system/status
       "name": "market-data-service",
       "status": "UNKNOWN",
       "type": "GO_SERVICE"
+    },
+    {
+      "name": "strategy-service",
+      "status": "UNKNOWN",
+      "type": "JAVA_SERVICE"
     },
     {
       "name": "execution-sim-service",

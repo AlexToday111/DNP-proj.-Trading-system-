@@ -6,18 +6,18 @@ Kafka is the main event bus between Porta backend services.
 
 | Topic | Producer | Consumers | Purpose |
 | --- | --- | --- | --- |
-| `market-data` | Go `market-data-service` | `strategy-service`, Go `execution-sim-service`, optionally Java `trading-core` | Distributes market price events. |
-| `signals` | `strategy-service` | Java `trading-core` | Carries trading signals that Java turns into orders. |
+| `market-data` | Go `market-data-service` | Java `strategy-service`, Go `execution-sim-service`, optionally Java `trading-core` | Distributes market price events. |
+| `signals` | Java `strategy-service` | Java `trading-core` | Carries trading signals that Java turns into orders. |
 | `orders` | Java `trading-core` | Go `execution-sim-service` | Carries orders to be simulated. |
 | `execution-result` | Go `execution-sim-service` | Java `trading-core` | Carries execution outcomes back to Java. |
 
 ## Consumer Groups
 
-`market-data` must be consumed by both `strategy-service` and `execution-sim-service`.
+`market-data` must be consumed by both Java `strategy-service` and `execution-sim-service`.
 
 These services must use different consumer groups:
 
-- `strategy-service` receives the full market data stream for signal generation.
+- Java `strategy-service` receives the full market data stream for signal generation.
 - `execution-sim-service` receives the full market data stream for latest price cache updates.
 
 If they share a consumer group, Kafka will split events between them, which is incorrect for this architecture.
@@ -32,7 +32,7 @@ Producer:
 
 Consumers:
 
-- `strategy-service`
+- Java `strategy-service`
 - Go `execution-sim-service`
 - Java `trading-core`, optional for dashboard/history persistence
 
@@ -54,7 +54,7 @@ Purpose: trading decision stream.
 
 Producer:
 
-- `strategy-service`
+- Java `strategy-service`
 
 Consumer:
 
@@ -74,7 +74,7 @@ Example payload:
 }
 ```
 
-Current assumption: if quantity is not provided by `strategy-service`, Java can apply an MVP fallback. Future strategy output should publish explicit sizing.
+Java `strategy-service` publishes explicit MVP quantity. Java `trading-core` still accepts missing quantity as a compatibility fallback.
 
 ## `orders`
 

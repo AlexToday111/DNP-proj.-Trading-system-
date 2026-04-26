@@ -51,7 +51,6 @@ public class SignalConsumer {
     }
 
     private BigDecimal defaultQuantity(BigDecimal quantity) {
-        // TODO: replace default signal quantity when strategy-service publishes explicit sizing.
         return quantity != null ? quantity : BigDecimal.ONE;
     }
 

@@ -6,7 +6,7 @@ The Porta backend flow is:
 MarketData -> Signal -> Order -> ExecutionResult -> PortfolioUpdate
 ```
 
-The frontend reads the resulting state from Java `trading-core`. It does not talk to Go services, Kafka, or PostgreSQL directly.
+The frontend reads the resulting state from Java `trading-core`. It does not talk to Java `strategy-service`, Go services, Kafka, or PostgreSQL directly.
 
 ## Step-by-Step Flow
 
@@ -14,9 +14,9 @@ The frontend reads the resulting state from Java `trading-core`. It does not tal
 
    The Go `market-data-service` reads a CSV file, mock source, or external source and publishes events to Kafka topic `market-data`.
 
-2. `strategy-service` consumes market data and emits signals.
+2. Java `strategy-service` consumes market data and emits signals.
 
-   `strategy-service` reads topic `market-data`, applies strategy logic, and publishes trading signals to topic `signals`.
+   Java `strategy-service` reads topic `market-data`, applies simple MVP strategy logic, and publishes trading signals to topic `signals`.
 
 3. Java `trading-core` consumes signals.
 
@@ -72,7 +72,7 @@ The frontend reads the resulting state from Java `trading-core`. It does not tal
 sequenceDiagram
     participant MD as market-data-service
     participant Kafka as Kafka
-    participant Strategy as strategy-service
+    participant Strategy as Java strategy-service
     participant Core as Java trading-core
     participant Exec as execution-sim-service
     participant DB as PostgreSQL

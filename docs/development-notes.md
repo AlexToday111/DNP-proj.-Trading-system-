@@ -7,11 +7,11 @@
 - PostgreSQL is the persistent store for state owned by Java `trading-core`.
 - `execution-sim-service` may keep latest market prices in local memory for MVP.
 - Polling `/api/v1/dashboard` is acceptable until SSE or WebSocket is implemented.
-- `strategy-service` is responsible for publishing signals. If its implementation is incomplete, document assumptions instead of changing unrelated services.
+- Java `strategy-service` is responsible for publishing signals from market data.
 
 ## Known TODOs
 
-- Add active health checks for Kafka, PostgreSQL, Go services, and strategy service.
+- Add active health checks for Kafka, PostgreSQL, Go services, and Java strategy service.
 - Add broader integration tests for Kafka and PostgreSQL.
 - Decide whether Redis is needed for shared cache use cases.
 - Add SSE or WebSocket only after the REST contract is stable.
@@ -20,6 +20,7 @@
 ## Contributor Rules
 
 - Keep the frontend/backend boundary strict.
+- Do not make the frontend call Java `strategy-service` directly.
 - Do not make the frontend call Go services directly.
 - Do not make the frontend consume Kafka directly.
 - Do not make the frontend query PostgreSQL directly.

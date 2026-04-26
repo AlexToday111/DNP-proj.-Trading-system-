@@ -14,6 +14,7 @@ The frontend must only communicate with Java `trading-core`.
 
 The frontend must not:
 
+- call Java `strategy-service` directly;
 - call Go services directly;
 - consume Kafka directly;
 - query PostgreSQL directly.
@@ -26,7 +27,7 @@ The frontend must not:
 | Java `trading-core` | Core service, orchestrator, and backend-for-frontend. It owns frontend APIs and persistent trading state. |
 | Kafka | Event bus between backend services. |
 | Go `market-data-service` | Publishes market data events to Kafka. |
-| `strategy-service` | Consumes market data and publishes trading signals. Current assumption: this service owns signal generation. |
+| Java `strategy-service` | Consumes market data and publishes simple MVP trading signals. |
 | Go `execution-sim-service` | Simulates order execution using orders and latest market prices. |
 | PostgreSQL | Persistent storage for trading state. |
 | Redis | Optional cache for future shared low-latency data. |
@@ -55,7 +56,7 @@ Kafka decouples backend services. Services do not need to call each other direct
 market-data -> signals -> orders -> execution-result
 ```
 
-`market-data` is consumed by both `strategy-service` and `execution-sim-service`. These services must use different consumer groups so both receive all market data events.
+`market-data` is consumed by both Java `strategy-service` and `execution-sim-service`. These services must use different consumer groups so both receive all market data events.
 
 ## PostgreSQL as Persistent State
 
@@ -103,7 +104,7 @@ flowchart LR
     CORE["Java trading-core<br/>Core Service / Orchestrator / BFF"]
     KAFKA["Apache Kafka<br/>Event Bus"]
     MD["Go market-data-service<br/>Market Data Publisher"]
-    STRATEGY["strategy-service<br/>Signal Producer"]
+    STRATEGY["Java strategy-service<br/>Signal Producer"]
     EXEC["Go execution-sim-service<br/>Execution Simulator"]
     DB[("PostgreSQL<br/>Trading State")]
     REDIS[("Redis<br/>optional cache")]

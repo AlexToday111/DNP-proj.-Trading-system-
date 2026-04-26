@@ -67,6 +67,19 @@ services:
       KAFKA_ORDERS_TOPIC: orders
       KAFKA_EXECUTION_RESULT_TOPIC: execution-result
 
+  strategy-service:
+    image: ${IMAGE_PREFIX:-porta}-strategy-service:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_CONSUMER_GROUP: strategy-service
+      KAFKA_MARKET_DATA_TOPIC: market-data
+      KAFKA_SIGNALS_TOPIC: signals
+      STRATEGY_SIGNAL_QUANTITY: 1
+
   market-data-service:
     image: ${IMAGE_PREFIX:-porta}-market-data:${IMAGE_TAG:-latest}
     restart: unless-stopped

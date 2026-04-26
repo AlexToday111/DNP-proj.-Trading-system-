@@ -31,6 +31,7 @@ Fields:
 - `signalId`
 - `symbol`
 - `side`
+- `quantity`
 - `price`
 - `reason`
 - `timestamp`
@@ -42,13 +43,14 @@ Example:
   "signalId": "sig-001",
   "symbol": "AAPL",
   "side": "BUY",
+  "quantity": 10,
   "price": 187.42,
   "reason": "PRICE_CROSSOVER",
   "timestamp": "2026-04-25T12:00:01Z"
 }
 ```
 
-Current assumption: signal quantity may be added by strategy output or defaulted by Java for MVP order sizing.
+Java `strategy-service` publishes explicit quantity. Java `trading-core` still accepts missing quantity as a compatibility fallback for manually simulated signals.
 
 ## Order
 

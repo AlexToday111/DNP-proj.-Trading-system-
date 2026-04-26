@@ -80,7 +80,6 @@ mvn spring-boot:run
 
 ## TODO
 
-- Replace static `/api/v1/system/status` dependency statuses with active Kafka/PostgreSQL/Go service health checks.
-- Replace default signal quantity fallback when strategy-service publishes explicit sizing.
+- Replace static `/api/v1/system/status` dependency statuses with active Kafka/PostgreSQL/backend service health checks.
 - Add broader controller tests for dashboard, orders, executions and portfolio endpoints.
 - Add integration tests with PostgreSQL and Kafka test containers if the project adopts containerized test infrastructure.

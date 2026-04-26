@@ -6,7 +6,7 @@ This document describes a clear demo sequence for presenting Porta.
 
 1. Start services.
 
-   Start local infrastructure and backend services. The expected components are Kafka, PostgreSQL, Java `trading-core`, Go `market-data-service`, Go `execution-sim-service`, and the frontend dashboard.
+   Start local infrastructure and backend services. The expected components are Kafka, PostgreSQL, Java `trading-core`, Java `strategy-service`, Go `market-data-service`, Go `execution-sim-service`, and the frontend dashboard.
 
 2. Start market data replay.
 
@@ -18,7 +18,7 @@ This document describes a clear demo sequence for presenting Porta.
 
 4. Strategy emits a signal.
 
-   `strategy-service` consumes `market-data` and publishes a signal to Kafka topic `signals`.
+   Java `strategy-service` consumes `market-data` and publishes a signal to Kafka topic `signals`.
 
 5. Java `trading-core` creates an order.
 
@@ -55,11 +55,11 @@ The central message of the demo:
 Frontend -> Java trading-core -> Kafka / PostgreSQL / backend services
 ```
 
-Avoid presenting the frontend as directly connected to Go services, Kafka, or PostgreSQL.
+Avoid presenting the frontend as directly connected to Java `strategy-service`, Go services, Kafka, or PostgreSQL.
 
 ## MVP Demo Notes
 
 - Polling `/api/v1/dashboard` is acceptable for MVP.
 - SSE or WebSocket can be presented as a future real-time improvement.
-- If `strategy-service` is not running, a demo signal can be simulated according to the `Signal` event contract.
+- If Java `strategy-service` is not running, a demo signal can be simulated according to the `Signal` event contract.
 - If external market data is unavailable, CSV replay is enough for a deterministic demo.

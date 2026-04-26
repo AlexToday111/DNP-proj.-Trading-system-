@@ -5,7 +5,7 @@
 <h1 align="center">Porta</h1>
 
 <p align="center">
-  Porta is a distributed trading-system MVP with a dashboard, Java core orchestrator, Go backend services, Kafka event streaming, and PostgreSQL-backed portfolio state.
+  Porta is a distributed trading-system MVP with a dashboard, Java backend services, Go data services, Kafka event streaming, and PostgreSQL-backed portfolio state.
 </p>
 
 <p align="center">
@@ -73,15 +73,15 @@ The frontend boundary is strict:
 Frontend -> Java trading-core -> Kafka / PostgreSQL / backend services
 ```
 
-The frontend must not communicate directly with Go services, Kafka, or PostgreSQL:
+The frontend must not communicate directly with non-BFF backend services, Kafka, or PostgreSQL:
 
 ```text
-Frontend -> Go services
+Frontend -> strategy-service / Go services
 Frontend -> Kafka
 Frontend -> PostgreSQL
 ```
 
-Kafka is the main event bus between backend services. Java `trading-core` consumes trading signals, creates orders, publishes orders, consumes execution results, updates order and portfolio state, persists state in PostgreSQL, and exposes frontend-facing APIs.
+Kafka is the main event bus between backend services. Java `strategy-service` consumes market data and publishes trading signals. Java `trading-core` consumes trading signals, creates orders, publishes orders, consumes execution results, updates order and portfolio state, persists state in PostgreSQL, and exposes frontend-facing APIs.
 
 ```mermaid
 flowchart LR
@@ -89,7 +89,7 @@ flowchart LR
     CORE["Java trading-core<br/>Core Service / Orchestrator"]
     KAFKA["Apache Kafka<br/>Event Bus"]
     MD["Go market-data-service"]
-    STRATEGY["strategy-service"]
+    STRATEGY["Java strategy-service"]
     EXEC["Go execution-sim-service"]
     DB[("PostgreSQL")]
     REDIS[("Redis<br/>optional")]
@@ -118,7 +118,8 @@ flowchart LR
 | --- | --- |
 | Frontend | React, TypeScript, Vite |
 | Core backend | Java, Spring Boot, Spring Kafka, Spring Data JPA |
-| Backend services | Go services for market data and execution simulation |
+| Strategy backend | Java, Spring Boot, Spring Kafka |
+| Data services | Go services for market data and execution simulation |
 | Event streaming | Apache Kafka |
 | Persistent storage | PostgreSQL |
 | Optional cache | Redis |
@@ -133,8 +134,8 @@ flowchart LR
 | --- | --- |
 | Frontend Dashboard | Displays market data, signals, orders, executions, service status, and portfolio state. It communicates only with Java `trading-core`. |
 | Java `trading-core` | Central core service and backend-for-frontend. It exposes REST APIs, consumes signals, creates orders, publishes orders, consumes execution results, updates portfolio state, and persists state. |
+| Java `strategy-service` | Consumes market data and publishes MVP trading signals to Kafka topic `signals`. |
 | Go `market-data-service` | Publishes market data events to Kafka topic `market-data`. |
-| `strategy-service` | Consumes market data and publishes trading signals to Kafka topic `signals`. Current assumption: this service owns signal generation. |
 | Go `execution-sim-service` | Consumes `orders` and `market-data`, keeps latest prices in a local MVP cache, simulates fills, and publishes `execution-result` events. |
 | PostgreSQL | Stores orders, executions, signals, positions, portfolio snapshots, and market data history where needed. |
 
@@ -144,12 +145,12 @@ flowchart LR
 
 | Topic | Producer | Consumers | Purpose |
 | --- | --- | --- | --- |
-| `market-data` | `market-data-service` | `strategy-service`, `execution-sim-service`, optionally `trading-core` | Market price events. |
-| `signals` | `strategy-service` | `trading-core` | Trading decisions that become orders. |
+| `market-data` | `market-data-service` | Java `strategy-service`, `execution-sim-service`, optionally `trading-core` | Market price events. |
+| `signals` | Java `strategy-service` | `trading-core` | Trading decisions that become orders. |
 | `orders` | `trading-core` | `execution-sim-service` | Orders to execute or reject. |
 | `execution-result` | `execution-sim-service` | `trading-core` | Execution outcomes used to update orders and portfolio state. |
 
-`strategy-service` and `execution-sim-service` must use different Kafka consumer groups for `market-data` so both services receive the full stream.
+Java `strategy-service` and `execution-sim-service` must use different Kafka consumer groups for `market-data` so both services receive the full stream.
 
 ---
 
@@ -196,7 +197,7 @@ More detailed documentation is available in the [`docs/`](./docs) directory:
 1. Start infrastructure and backend services.
 2. Start market data replay from `market-data-service`.
 3. Market data is published to Kafka topic `market-data`.
-4. `strategy-service` emits a signal to topic `signals`.
+4. Java `strategy-service` emits a signal to topic `signals`.
 5. Java `trading-core` consumes the signal, creates an order, saves it, and publishes it to topic `orders`.
 6. `execution-sim-service` consumes the order and latest market data, simulates execution, and publishes an `execution-result`.
 7. Java `trading-core` updates order status and portfolio state in PostgreSQL.

@@ -1,6 +1,6 @@
 # Porta Backend
 
-The Porta backend is a distributed event-driven system built around Java `trading-core`, Go services, Kafka, and PostgreSQL.
+The Porta backend is a distributed event-driven system built around Java `trading-core`, Java `strategy-service`, Go services, Kafka, and PostgreSQL.
 
 The target end-to-end flow is:
 
@@ -16,6 +16,7 @@ Frontend -> Java trading-core -> Kafka / PostgreSQL / backend services
 
 The frontend must not communicate directly with:
 
+- Java `strategy-service`;
 - Go services;
 - Kafka;
 - PostgreSQL.
@@ -24,7 +25,7 @@ The frontend must not communicate directly with:
 
 | Member | Area | Responsibility |
 | --- | --- | --- |
-| Ernest | Java Backend | Java `trading-core`, orchestration, order flow, portfolio state, PostgreSQL persistence, frontend API. |
+| Ernest | Java Backend | Java `trading-core`, Java `strategy-service`, orchestration, order flow, portfolio state, PostgreSQL persistence, frontend API. |
 | Nikita | Golang Backend | Go `market-data-service`, market data ingestion and Kafka publishing. |
 | Zakhar | Golang Backend | Go `execution-sim-service`, latest price cache, order execution simulation, execution result publishing. |
 
@@ -55,6 +56,26 @@ Core domain entities:
 - `ExecutionResult`
 - `Portfolio`
 - `Position`
+
+### Java strategy-service
+
+Java `strategy-service` is responsible for generating trading signals from market data.
+
+Responsibilities:
+
+- consume Kafka topic `market-data`;
+- keep the latest price per symbol in memory;
+- apply a simple MVP momentum rule;
+- publish Kafka topic `signals`;
+- include explicit signal quantity for Java `trading-core`.
+
+Minimum MVP behavior:
+
+1. Consume a market data event from Kafka topic `market-data`.
+2. Compare the price with the previous price for the same symbol.
+3. Publish `BUY` when the price is new or increasing.
+4. Publish `SELL` when the price is decreasing.
+5. Skip signal publishing when the price is unchanged.
 
 ### Go market-data-service
 
@@ -112,11 +133,11 @@ Important boundary:
 ```text
 market-data-service
   -> Kafka topic `market-data`
-     -> strategy-service
+     -> Java strategy-service
      -> execution-sim-service
      -> optionally trading-core for dashboard/history
 
-strategy-service
+Java strategy-service
   -> Kafka topic `signals`
   -> trading-core
 
@@ -137,18 +158,18 @@ trading-core
 
 | Topic | Producer | Consumers | Purpose |
 | --- | --- | --- | --- |
-| `market-data` | `market-data-service` | `strategy-service`, `execution-sim-service`, optionally `trading-core` | Market price stream. |
-| `signals` | `strategy-service` | `trading-core` | Trading decisions. |
+| `market-data` | `market-data-service` | Java `strategy-service`, `execution-sim-service`, optionally `trading-core` | Market price stream. |
+| `signals` | Java `strategy-service` | `trading-core` | Trading decisions. |
 | `orders` | `trading-core` | `execution-sim-service` | Orders to simulate. |
 | `execution-result` | `execution-sim-service` | `trading-core` | Execution outcomes for order and portfolio updates. |
 
 ## Consumer Groups
 
-`strategy-service` and `execution-sim-service` must consume `market-data` with different Kafka consumer groups.
+Java `strategy-service` and `execution-sim-service` must consume `market-data` with different Kafka consumer groups.
 
 This is required because both services need the full market data stream:
 
-- `strategy-service` needs market data to generate signals;
+- Java `strategy-service` needs market data to generate signals;
 - `execution-sim-service` needs market data to maintain latest price cache.
 
 If both services share the same consumer group, Kafka will split market data events between them, which is not correct for Porta.
@@ -270,6 +291,8 @@ PostgreSQL is used by Java `trading-core` for persistent state:
 - It consumes execution results.
 - It updates portfolio state.
 - It exposes frontend API endpoints.
+- `strategy-service` is running.
+- It consumes market data and publishes signals.
 
 ### Go market-data-service
 
@@ -299,8 +322,8 @@ More detailed system documentation is available in the root [`docs`](../docs) di
 
 ## Current Assumptions and TODOs
 
-- `strategy-service` is documented as the producer of `signals`.
-- `market-data` must be consumed by both `strategy-service` and `execution-sim-service`.
+- Java `strategy-service` is the producer of `signals`.
+- `market-data` must be consumed by both Java `strategy-service` and `execution-sim-service`.
 - Real service health checks should be connected to the Java system status API.
 - Cross-service event contracts should stay aligned before demo.
 - If a service sends a different payload shape, document the mismatch before changing another team's code.

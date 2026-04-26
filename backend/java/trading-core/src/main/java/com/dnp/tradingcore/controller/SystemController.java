@@ -14,13 +14,13 @@ import java.util.List;
 public class SystemController {
     @GetMapping("/status")
     public SystemStatusResponse status() {
-        // TODO: replace static dependency statuses with active Kafka/PostgreSQL/Go service health checks.
+        // TODO: replace static dependency statuses with active Kafka/PostgreSQL/backend service health checks.
         return new SystemStatusResponse(
                 "UP",
                 List.of(
                         new SystemServiceResponse("trading-core", "UP", "JAVA_CORE"),
                         new SystemServiceResponse("market-data-service", "UNKNOWN", "GO_SERVICE"),
-                        new SystemServiceResponse("strategy-service", "UNKNOWN", "BACKEND_SERVICE"),
+                        new SystemServiceResponse("strategy-service", "UNKNOWN", "JAVA_SERVICE"),
                         new SystemServiceResponse("execution-sim-service", "UNKNOWN", "GO_SERVICE"),
                         new SystemServiceResponse("kafka", "UNKNOWN", "MESSAGE_BROKER"),
                         new SystemServiceResponse("postgresql", "UNKNOWN", "DATABASE")

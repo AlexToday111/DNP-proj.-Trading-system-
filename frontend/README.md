@@ -8,7 +8,7 @@ It visualizes the full system flow:
 MarketData -> Signal -> Order -> Execution -> Portfolio
 ```
 
-The frontend is a client of Java `trading-core` only. It must not call Go services directly, consume Kafka, or query PostgreSQL.
+The frontend is a client of Java `trading-core` only. It must not call Java `strategy-service` or Go services directly, consume Kafka, or query PostgreSQL.
 
 ```text
 Frontend -> Java trading-core -> Kafka / PostgreSQL / backend services
