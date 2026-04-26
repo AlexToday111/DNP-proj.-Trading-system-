@@ -2,6 +2,7 @@ package com.dnp.tradingcore.messaging;
 
 import com.dnp.tradingcore.domain.Signal;
 import com.dnp.tradingcore.dto.SignalMessage;
+import com.dnp.tradingcore.service.ServiceHealthTracker;
 import com.dnp.tradingcore.service.TradingCoreService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,15 +15,22 @@ import java.util.UUID;
 @Component
 public class SignalConsumer {
     private final ObjectMapper objectMapper;
+    private final ServiceHealthTracker serviceHealthTracker;
     private final TradingCoreService tradingCoreService;
 
-    public SignalConsumer(ObjectMapper objectMapper, TradingCoreService tradingCoreService) {
+    public SignalConsumer(
+            ObjectMapper objectMapper,
+            ServiceHealthTracker serviceHealthTracker,
+            TradingCoreService tradingCoreService
+    ) {
         this.objectMapper = objectMapper;
+        this.serviceHealthTracker = serviceHealthTracker;
         this.tradingCoreService = tradingCoreService;
     }
 
     @KafkaListener(topics = "${app.kafka.topics.signals}", groupId = "${spring.kafka.consumer.group-id}")
     public void consume(String payload) {
+        serviceHealthTracker.markKafkaMessage(ServiceHealthTracker.STRATEGY_SERVICE);
         SignalMessage message = fromPayload(payload);
 
         Signal signal = new Signal(
