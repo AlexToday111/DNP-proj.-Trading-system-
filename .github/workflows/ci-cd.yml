@@ -178,7 +178,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: ${{ secrets.DEPLOY_PORT }}
-          source: docker-compose.prod.yml
+          source: docker-compose.yml
           target: ~/porta
 
       - name: Deploy via SSH
@@ -197,8 +197,8 @@ jobs:
             # Подтянуть свежие образы и перезапустить
             export IMAGE_PREFIX="${{ env.IMAGE_PREFIX }}"
             export IMAGE_TAG="${{ github.sha }}"
-            docker compose -f docker-compose.prod.yml pull
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            docker compose -f docker-compose.yml pull
+            docker compose -f docker-compose.yml up -d --remove-orphans
 
             # Убрать старые образы
             docker image prune -f
