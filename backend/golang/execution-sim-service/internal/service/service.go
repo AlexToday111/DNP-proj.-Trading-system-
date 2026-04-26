@@ -6,6 +6,7 @@ import (
 	"execution-sim-service/internal/models"
 	"fmt"
 	"log"
+	"strings"
 	"sync"
 	"time"
 
@@ -174,7 +175,7 @@ func (s *SimulateOrder) ProcessOrder(ctx context.Context, order models.Order) er
 	}
 
 	var status bool
-	switch order.Side {
+	switch strings.ToLower(order.Side) {
 	case "sell":
 		cached.Volume += order.Quantity
 		s.cache[order.Symbol] = cached
