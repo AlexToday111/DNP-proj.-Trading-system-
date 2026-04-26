@@ -8,7 +8,6 @@
 
 - [Архитектура инфраструктуры](#архитектура-инфраструктуры)
 - [Docker-образы](#docker-образы)
-- [Локальная разработка](#локальная-разработка)
 - [CI/CD пайплайн](#cicd-пайплайн)
 - [Деплой-сервер](#деплой-сервер)
 - [Переменные окружения](#переменные-окружения)
@@ -65,34 +64,6 @@
 - `<DOCKERHUB_USERNAME>/porta-execution-sim`
 
 Каждый образ тегируется `:latest` и `:<commit-sha>` для возможности отката.
-
----
-
-## Локальная разработка
-
-Для запуска всего стека локально используется `docker-compose.yml` (собирает образы из исходников):
-
-```bash
-docker compose up --build
-```
-
-После запуска:
-- Frontend: http://localhost:3000
-- Trading Core API: http://localhost:8080
-- Kafka: `localhost:9092`
-- PostgreSQL: `localhost:5432`
-
-Остановка:
-
-```bash
-docker compose down
-```
-
-Полная очистка (включая данные БД):
-
-```bash
-docker compose down -v
-```
 
 ---
 
@@ -252,8 +223,7 @@ curl -I http://localhost
 │   ├── Dockerfile
 │   ├── .dockerignore
 │   └── nginx.conf                             # Nginx: SPA routing + API proxy
-├── docker-compose.yml                         # Локальная разработка (build)
-├── docker-compose.prod.yml                    # Продакшн (image pull)
+├── docker-compose.yml                    # Продакшн (image pull)
 └── docs/
     └── devops.md                              # ← этот файл
 ```
