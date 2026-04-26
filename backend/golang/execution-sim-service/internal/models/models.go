@@ -23,6 +23,6 @@ type ExecutionResult struct {
 	Side          string  `json:"side"`
 	Quantity      float64 `json:"quantity"`
 	ExecutedPrice float64 `json:"executedPrice"`
-	Status        bool    `json:"status"`
+	Status        string  `json:"status"`
 	Timestamp     string  `json:"timestamp"`
 }

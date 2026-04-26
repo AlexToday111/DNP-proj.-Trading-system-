@@ -161,7 +161,7 @@ func (s *SimulateOrder) ProcessOrder(ctx context.Context, order models.Order) er
 			Side:          order.Side,
 			Quantity:      order.Quantity,
 			ExecutedPrice: 0,
-			Status:        false,
+			Status:        "NO_MARKET_DATA",
 			Timestamp:     time.Now().UTC().Format(time.RFC3339),
 		}
 		s.orderResults[order.OrderId] = orderRecord{Result: result, Timestamp: time.Now()}
@@ -174,19 +174,19 @@ func (s *SimulateOrder) ProcessOrder(ctx context.Context, order models.Order) er
 		return nil
 	}
 
-	var status bool
+	var status string
 	switch strings.ToLower(order.Side) {
 	case "sell":
 		cached.Volume += order.Quantity
 		s.cache[order.Symbol] = cached
-		status = true
+		status = "FILLED"
 	case "buy":
 		if cached.Volume < order.Quantity {
-			status = false
+			status = "REJECTED"
 		} else {
 			cached.Volume -= order.Quantity
 			s.cache[order.Symbol] = cached
-			status = true
+			status = "FILLED"
 		}
 	default:
 		return fmt.Errorf("invalid side: %q", order.Side)
@@ -208,7 +208,7 @@ func (s *SimulateOrder) ProcessOrder(ctx context.Context, order models.Order) er
 		log.Printf("[ERROR] Failed to publish execution result for order %s: %v", order.OrderId, err)
 		return fmt.Errorf("publish failed: %w", err)
 	}
-	if status {
+	if status == "FILLED" {
 		log.Printf("[INFO] Order executed: %s %s %.2f %.2f", order.Symbol, order.Side, order.Quantity, cached.Price)
 	} else {
 		log.Printf("[WARN] Order rejected (insufficient volume): %s %s need %.2f have %.2f",
