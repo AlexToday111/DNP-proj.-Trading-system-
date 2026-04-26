@@ -1,4 +1,4 @@
-# Porta Backend
+<h1 align="center">Porta Backend</h1>
 
 The Porta backend is a distributed event-driven system built around Java `trading-core`, Java `strategy-service`, Go services, Kafka, and PostgreSQL.
 
@@ -21,7 +21,7 @@ The frontend must not communicate directly with:
 - Kafka;
 - PostgreSQL.
 
-## Team Responsibilities
+<h2 align="center">Team Responsibilities</h2>
 
 | Member | Area | Responsibility |
 | --- | --- | --- |
@@ -29,9 +29,9 @@ The frontend must not communicate directly with:
 | Nikita | Golang Backend | Go `market-data-service`, market data ingestion and Kafka publishing. |
 | Zakhar | Golang Backend | Go `execution-sim-service`, latest price cache, order execution simulation, execution result publishing. |
 
-## Backend Services
+<h2 align="center">Backend Services</h2>
 
-### Java trading-core
+<h3 align="center">Java trading-core</h3>
 
 Java `trading-core` owns the core trading state and frontend-facing API.
 
@@ -57,7 +57,7 @@ Core domain entities:
 - `Portfolio`
 - `Position`
 
-### Java strategy-service
+<h3 align="center">Java strategy-service</h3>
 
 Java `strategy-service` is responsible for generating trading signals from market data.
 
@@ -77,7 +77,7 @@ Minimum MVP behavior:
 4. Publish `SELL` when the price is decreasing.
 5. Skip signal publishing when the price is unchanged.
 
-### Go market-data-service
+<h3 align="center">Go market-data-service</h3>
 
 Go `market-data-service` is responsible for providing market data to the rest of the system.
 
@@ -97,7 +97,7 @@ Minimum MVP behavior:
 3. Publish it to Kafka.
 4. Repeat for all available data.
 
-### Go execution-sim-service
+<h3 align="center">Go execution-sim-service</h3>
 
 Go `execution-sim-service` simulates order execution.
 
@@ -128,7 +128,7 @@ Important boundary:
 
 `execution-sim-service` should not fetch market data directly from an external source. The internal source of market data is `market-data-service`, and other services consume that data through Kafka.
 
-## Backend Event Flow
+<h2 align="center">Backend Event Flow</h2>
 
 ```text
 market-data-service
@@ -154,7 +154,7 @@ trading-core
   -> frontend API
 ```
 
-## Kafka Topics
+<h2 align="center">Kafka Topics</h2>
 
 | Topic | Producer | Consumers | Purpose |
 | --- | --- | --- | --- |
@@ -163,7 +163,7 @@ trading-core
 | `orders` | `trading-core` | `execution-sim-service` | Orders to simulate. |
 | `execution-result` | `execution-sim-service` | `trading-core` | Execution outcomes for order and portfolio updates. |
 
-## Consumer Groups
+<h2 align="center">Consumer Groups</h2>
 
 Java `strategy-service` and `execution-sim-service` must consume `market-data` with different Kafka consumer groups.
 
@@ -174,9 +174,9 @@ This is required because both services need the full market data stream:
 
 If both services share the same consumer group, Kafka will split market data events between them, which is not correct for Porta.
 
-## Event Contracts
+<h2 align="center">Event Contracts</h2>
 
-### MarketData
+<h3 align="center">MarketData</h3>
 
 Topic: `market-data`
 
@@ -200,7 +200,7 @@ Example:
 }
 ```
 
-### Order
+<h3 align="center">Order</h3>
 
 Topic: `orders`
 
@@ -234,7 +234,7 @@ Example:
 }
 ```
 
-### ExecutionResult
+<h3 align="center">ExecutionResult</h3>
 
 Topic: `execution-result`
 
@@ -270,7 +270,7 @@ Example:
 }
 ```
 
-## Storage
+<h2 align="center">Storage</h2>
 
 PostgreSQL is used by Java `trading-core` for persistent state:
 
@@ -281,9 +281,9 @@ PostgreSQL is used by Java `trading-core` for persistent state:
 - positions;
 - market data history, if needed for dashboard and history views.
 
-## MVP Targets
+<h2 align="center">MVP Targets</h2>
 
-### Java Backend
+<h3 align="center">Java Backend</h3>
 
 - `trading-core` is running.
 - It consumes signals.
@@ -294,13 +294,13 @@ PostgreSQL is used by Java `trading-core` for persistent state:
 - `strategy-service` is running.
 - It consumes market data and publishes signals.
 
-### Go market-data-service
+<h3 align="center">Go market-data-service</h3>
 
 - Service is running.
 - It reads market data from CSV or configured source.
 - It publishes `market-data` events to Kafka.
 
-### Go execution-sim-service
+<h3 align="center">Go execution-sim-service</h3>
 
 - Service is running.
 - It consumes `orders`.
@@ -308,7 +308,7 @@ PostgreSQL is used by Java `trading-core` for persistent state:
 - It updates latest price cache.
 - It publishes `execution-result` events.
 
-## Documentation
+<h2 align="center">Documentation</h2>
 
 More detailed system documentation is available in the root [`docs`](../docs) directory:
 
@@ -319,11 +319,3 @@ More detailed system documentation is available in the root [`docs`](../docs) di
 - [Frontend API](../docs/frontend-api.md)
 - [Demo Flow](../docs/demo-flow.md)
 - [Development Notes](../docs/development-notes.md)
-
-## Current Assumptions and TODOs
-
-- Java `strategy-service` is the producer of `signals`.
-- `market-data` must be consumed by both Java `strategy-service` and `execution-sim-service`.
-- Real service health checks should be connected to the Java system status API.
-- Cross-service event contracts should stay aligned before demo.
-- If a service sends a different payload shape, document the mismatch before changing another team's code.

@@ -1,4 +1,4 @@
-# Porta Frontend
+<h1 align="center">Porta Frontend</h1>
 
 The Porta frontend is a React, TypeScript, and Vite dashboard for monitoring the trading-system MVP.
 
@@ -14,13 +14,13 @@ The frontend is a client of Java `trading-core` only. It must not call Java `str
 Frontend -> Java trading-core -> Kafka / PostgreSQL / backend services
 ```
 
-## Owner
+<h2 align="center">Owner</h2>
 
 | Member | Responsibility |
 | --- | --- |
 | Islam | Frontend / Design |
 
-## Purpose
+<h2 align="center">Purpose</h2>
 
 The frontend provides a demo-ready operational dashboard for:
 
@@ -35,7 +35,7 @@ The frontend provides a demo-ready operational dashboard for:
 
 It is designed to show how backend events move through Porta and how the Java core service exposes the current system state to users.
 
-## Current Application Stack
+<h2 align="center">Current Application Stack</h2>
 
 - React 18
 - TypeScript
@@ -45,7 +45,7 @@ It is designed to show how backend events move through Porta and how the Java co
 - `clsx`
 - local hooks and reusable dashboard UI components
 
-## Pages
+<h2 align="center">Pages</h2>
 
 The application currently contains these dashboard pages:
 
@@ -57,7 +57,7 @@ The application currently contains these dashboard pages:
 - `Portfolio`
 - `System Health`
 
-## Implemented UI Features
+<h2 align="center">Implemented UI Features</h2>
 
 - Main dashboard shell with `TopBar` and `Sidebar`.
 - Page navigation inside the dashboard.
@@ -69,9 +69,9 @@ The application currently contains these dashboard pages:
 - Shared visual flow for `MarketData -> Signal -> Order -> Execution -> Portfolio`.
 - Tables, metrics, summary cards, price chart, and activity feed components.
 
-## Page Responsibilities
+<h2 align="center">Page Responsibilities</h2>
 
-### Overview
+<h3 align="center">Overview</h3>
 
 Shows the high-level state of the platform:
 
@@ -85,7 +85,7 @@ Shows the high-level state of the platform:
 - recent activity feed;
 - data summary from `GET /dashboard`.
 
-### Market Data
+<h3 align="center">Market Data</h3>
 
 Shows market event state:
 
@@ -96,7 +96,7 @@ Shows market event state:
 - search by `eventId` and `symbol`;
 - latest market data table.
 
-### Signals
+<h3 align="center">Signals</h3>
 
 Shows strategy output:
 
@@ -107,7 +107,7 @@ Shows strategy output:
 - side filter;
 - signals table.
 
-### Orders
+<h3 align="center">Orders</h3>
 
 Shows order state:
 
@@ -119,7 +119,7 @@ Shows order state:
 - status filter;
 - orders table.
 
-### Executions
+<h3 align="center">Executions</h3>
 
 Shows execution results:
 
@@ -130,7 +130,7 @@ Shows execution results:
 - search by `executionId`, `orderId`, `symbol`, and `status`;
 - executions table.
 
-### Portfolio
+<h3 align="center">Portfolio</h3>
 
 Shows portfolio state:
 
@@ -143,7 +143,7 @@ Shows portfolio state:
 - open position count;
 - holdings table.
 
-### System Health
+<h3 align="center">System Health</h3>
 
 Shows backend service state:
 
@@ -154,7 +154,7 @@ Shows backend service state:
 - system flow visualization;
 - system, execution, and portfolio activity feed.
 
-## Backend API Integration
+<h2 align="center">Backend API Integration</h2>
 
 Default API base URL:
 
@@ -190,7 +190,7 @@ When combined with the default base URL, the real request path is:
 http://localhost:8080/api/v1/dashboard
 ```
 
-## Data Models
+<h2 align="center">Data Models</h2>
 
 The frontend is typed around these core entities:
 
@@ -205,7 +205,7 @@ The frontend is typed around these core entities:
 
 This means the UI is already prepared for backend integration through stable API contracts.
 
-## Local Development
+<h2 align="center">Local Development</h2>
 
 Install dependencies:
 
@@ -238,7 +238,7 @@ Run type checking:
 npm run typecheck
 ```
 
-## MVP Status
+<h2 align="center">MVP Status</h2>
 
 The frontend is usable as a local demo dashboard:
 
@@ -247,11 +247,3 @@ The frontend is usable as a local demo dashboard:
 - it requests data from the Java backend API;
 - it displays service status, market data, signals, orders, executions, and portfolio state;
 - it is ready for more frequent refreshes or future SSE/WebSocket integration.
-
-## Current Assumptions and TODOs
-
-- Java `trading-core` remains the only backend entry point for the frontend.
-- The dashboard can use polling for MVP.
-- SSE or WebSocket can be added later for real-time updates.
-- If backend services are unavailable, the UI should continue to show clear loading and error states.
-- API contract updates should be reflected in the shared project documentation under [`../docs`](../docs).

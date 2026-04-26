@@ -1,4 +1,4 @@
-# trading-core (Java backend)
+<h1 align="center">trading-core (Java backend)</h1>
 
 `trading-core` is the core service / orchestrator / backend-for-frontend for DNP Trading System.
 
@@ -14,7 +14,7 @@ The current backend flow is:
 market-data -> signals -> orders -> execution-result -> portfolio update
 ```
 
-## Implemented
+<h2 align="center">Implemented</h2>
 
 - REST API under `/api/v1` for frontend dashboard, market data, signals, orders, executions and portfolio.
 - Kafka consumer for `market-data`.
@@ -28,7 +28,7 @@ market-data -> signals -> orders -> execution-result -> portfolio update
 - Unified frontend error response format.
 - CORS for local frontend origins.
 
-## REST endpoints
+<h2 align="center">REST Endpoints</h2>
 
 - `GET /api/v1/health`
 - `GET /api/v1/system/status`
@@ -49,7 +49,7 @@ market-data -> signals -> orders -> execution-result -> portfolio update
 - `GET /api/v1/portfolio/positions`
 - `GET /api/v1/portfolio/positions/{symbol}`
 
-## Kafka topics
+<h2 align="center">Kafka Topics</h2>
 
 - `market-data`
 - `signals`
@@ -58,14 +58,14 @@ market-data -> signals -> orders -> execution-result -> portfolio update
 
 Topic names are configured in `src/main/resources/application.yml`.
 
-## Quick start
+<h2 align="center">Quick Start</h2>
 
 ```bash
 cd backend/java/trading-core
 mvn spring-boot:run
 ```
 
-## Environment variables
+<h2 align="center">Environment Variables</h2>
 
 - `POSTGRES_URL`
 - `POSTGRES_USER`
@@ -77,9 +77,3 @@ mvn spring-boot:run
 - `KAFKA_ORDERS_TOPIC`
 - `KAFKA_EXECUTION_RESULT_TOPIC`
 - `KAFKA_EXECUTION_RESULTS_TOPIC` legacy alias
-
-## TODO
-
-- Replace static `/api/v1/system/status` dependency statuses with active Kafka/PostgreSQL/backend service health checks.
-- Add broader controller tests for dashboard, orders, executions and portfolio endpoints.
-- Add integration tests with PostgreSQL and Kafka test containers if the project adopts containerized test infrastructure.

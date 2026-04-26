@@ -1,20 +1,20 @@
-# market-data-service
+<h1 align="center">market-data-service</h1>
 
-Читает market data из CSV и публикует события в Kafka topic `market-data`.
+`market-data-service` reads market data from CSV and publishes events to Kafka topic `market-data`.
 
-## Что умеет MVP
+<h2 align="center">MVP Capabilities</h2>
 
-- читает market data из CSV;
-- валидирует обязательные колонки;
-- преобразует строки в JSON-события;
-- публикует события в Kafka;
-- поддерживает replay interval;
-- умеет зациклить replay при необходимости;
-- логирует каждую отправку.
+- reads market data from CSV;
+- validates required columns;
+- converts rows into JSON events;
+- publishes events to Kafka;
+- supports replay interval configuration;
+- can loop replay when configured;
+- logs every published event.
 
-## Формат CSV
+<h2 align="center">CSV Format</h2>
 
-Обязательные колонки:
+Required columns:
 
 - `eventId`
 - `symbol`
@@ -22,14 +22,14 @@
 - `volume`
 - `timestamp`
 
-Пример:
+Example:
 
 ```csv
 eventId,symbol,price,volume,timestamp
 md-1,AAPL,189.42,1200,2026-04-25T10:00:00Z
 ```
 
-## Формат события
+<h2 align="center">Event Format</h2>
 
 ```json
 {
@@ -41,17 +41,17 @@ md-1,AAPL,189.42,1200,2026-04-25T10:00:00Z
 }
 ```
 
-## Переменные окружения
+<h2 align="center">Environment Variables</h2>
 
-- `KAFKA_BROKERS` - список брокеров через запятую, по умолчанию `localhost:9092`
-- `KAFKA_MARKET_DATA_TOPIC` - topic для market data, по умолчанию `market-data`
+- `KAFKA_BROKERS` - comma-separated broker list, defaults to `localhost:9092`
+- `KAFKA_MARKET_DATA_TOPIC` - market data topic, defaults to `market-data`
 - `KAFKA_CLIENT_ID` - client id Kafka producer
-- `MARKET_DATA_CSV_PATH` - путь до CSV-файла
-- `MARKET_DATA_REPLAY_INTERVAL_MS` - задержка между сообщениями
-- `MARKET_DATA_LOOP_REPLAY` - повторять ли CSV после завершения
-- `MARKET_DATA_SHUTDOWN_TIMEOUT_MS` - timeout на отправку при завершении
+- `MARKET_DATA_CSV_PATH` - path to the CSV file
+- `MARKET_DATA_REPLAY_INTERVAL_MS` - delay between messages
+- `MARKET_DATA_LOOP_REPLAY` - whether to replay the CSV again after reaching the end
+- `MARKET_DATA_SHUTDOWN_TIMEOUT_MS` - send timeout during shutdown
 
-## Запуск
+<h2 align="center">Run</h2>
 
 ```bash
 cd backend/golang/market-data-service
@@ -59,7 +59,7 @@ cp .env.example .env
 go run ./cmd
 ```
 
-## Проверка
+<h2 align="center">Verification</h2>
 
 ```bash
 go test ./...

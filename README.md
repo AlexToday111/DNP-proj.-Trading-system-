@@ -212,5 +212,3 @@ Porta is an MVP-oriented trading-system project. The current target is a clear e
 ```text
 MarketData -> Signal -> Order -> ExecutionResult -> PortfolioUpdate
 ```
-
-Some integrations may still be implemented as MVP assumptions or TODOs. Known implementation details and contributor rules are documented in [Development Notes](./docs/development-notes.md).

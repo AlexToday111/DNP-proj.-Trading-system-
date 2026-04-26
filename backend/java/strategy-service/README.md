@@ -1,10 +1,10 @@
-# strategy-service (Java backend)
+<h1 align="center">strategy-service (Java backend)</h1>
 
 `strategy-service` is a simple Java/Spring Kafka service that turns market data into trading signals.
 
 It consumes Kafka topic `market-data` and publishes Kafka topic `signals`.
 
-## MVP Strategy
+<h2 align="center">MVP Strategy</h2>
 
 The current strategy is intentionally small and deterministic:
 
@@ -16,21 +16,21 @@ The current strategy is intentionally small and deterministic:
 
 The service keeps only the latest price per symbol in memory. It does not store state in PostgreSQL and does not call `trading-core` directly.
 
-## Kafka topics
+<h2 align="center">Kafka Topics</h2>
 
 - consumes `market-data`
 - produces `signals`
 
 Topic names are configured in `src/main/resources/application.yml`.
 
-## Quick start
+<h2 align="center">Quick Start</h2>
 
 ```bash
 cd backend/java/strategy-service
 mvn spring-boot:run
 ```
 
-## Environment variables
+<h2 align="center">Environment Variables</h2>
 
 - `KAFKA_BOOTSTRAP_SERVERS`
 - `KAFKA_CONSUMER_GROUP`
