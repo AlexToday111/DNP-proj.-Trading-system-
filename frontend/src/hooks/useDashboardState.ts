@@ -1,4 +1,4 @@
-import { startTransition, useEffect, useMemo, useState } from 'react'
+import { startTransition, useEffect, useMemo, useRef, useState } from 'react'
 import { api } from '../lib/api'
 import {
   buildDashboardHref,
@@ -94,6 +94,26 @@ function mapExecution(execution: ApiExecution): Execution {
 
 function mapPortfolioSnapshot(snapshot: PortfolioSnapshot): PortfolioSnapshot {
   return snapshot
+}
+
+function compareTimestamps(left: string, right: string) {
+  if (!left && !right) return 0
+  if (!left) return -1
+  if (!right) return 1
+
+  const leftTime = Date.parse(left)
+  const rightTime = Date.parse(right)
+
+  if (Number.isNaN(leftTime) || Number.isNaN(rightTime)) {
+    return left.localeCompare(right)
+  }
+
+  return leftTime - rightTime
+}
+
+function shouldAcceptPortfolioSnapshot(current: PortfolioSnapshot, next: PortfolioSnapshot) {
+  if (!current.updatedAt) return true
+  return compareTimestamps(next.updatedAt, current.updatedAt) > 0
 }
 
 function mapPosition(position: ApiPosition, portfolioValue: number): Position {
@@ -198,6 +218,17 @@ export function useDashboardState() {
   const [services, setServices] = useState<ServiceHealth[]>([])
   const [portfolioSnapshot, setPortfolioSnapshot] = useState<PortfolioSnapshot>(EMPTY_PORTFOLIO)
   const [positions, setPositions] = useState<Position[]>([])
+  const portfolioSnapshotRef = useRef<PortfolioSnapshot>(EMPTY_PORTFOLIO)
+
+  const commitPortfolioSnapshot = (nextSnapshot: PortfolioSnapshot) => {
+    if (!shouldAcceptPortfolioSnapshot(portfolioSnapshotRef.current, nextSnapshot)) {
+      return false
+    }
+
+    portfolioSnapshotRef.current = nextSnapshot
+    setPortfolioSnapshot(nextSnapshot)
+    return true
+  }
 
   useEffect(() => {
     const handlePopState = () => setLocation(readDashboardLocation())
@@ -207,17 +238,21 @@ export function useDashboardState() {
 
   useEffect(() => {
     let active = true
+    let timeoutId: number | null = null
+    let lastRequestId = 0
 
     const loadDashboard = async () => {
+      const requestId = ++lastRequestId
+
       try {
         const [health, dashboard] = await Promise.all([api.getHealth(), api.getDashboard()])
-        if (!active) return
+        if (!active || requestId !== lastRequestId) return
 
         setDashboardMarketData(dashboard.latestMarketData.map(mapMarketTick))
         setDashboardSignals(dashboard.latestSignals.map(mapSignal))
         setDashboardOrders(dashboard.latestOrders.map(mapOrder))
         setDashboardExecutions(dashboard.latestExecutions.map(mapExecution))
-        setPortfolioSnapshot(
+        commitPortfolioSnapshot(
           mapPortfolioSnapshot({
             updatedAt: dashboard.portfolio.updatedAt,
             cash: dashboard.portfolio.cash,
@@ -231,24 +266,26 @@ export function useDashboardState() {
         setAppStatus(health.status === 'UP' ? 'live' : 'disconnected')
         setError(null)
       } catch (loadError) {
-        if (!active) return
+        if (!active || requestId !== lastRequestId) return
         setAppStatus('disconnected')
         setError(loadError instanceof Error ? loadError.message : 'Failed to load dashboard')
       } finally {
         if (active) {
           setIsBooting(false)
+          timeoutId = window.setTimeout(() => {
+            void loadDashboard()
+          }, 2000)
         }
       }
     }
 
     void loadDashboard()
-    const intervalId = window.setInterval(() => {
-      void loadDashboard()
-    }, 2000)
 
     return () => {
       active = false
-      window.clearInterval(intervalId)
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId)
+      }
     }
   }, [])
 
@@ -326,7 +363,7 @@ export function useDashboardState() {
             lastHeartbeat: systemStatusResponse.timestamp
           }))
         )
-        setPortfolioSnapshot({
+        commitPortfolioSnapshot({
           updatedAt: portfolioResponse.updatedAt,
           cash: portfolioResponse.cash,
           totalPositionValue: portfolioResponse.totalPositionValue,
