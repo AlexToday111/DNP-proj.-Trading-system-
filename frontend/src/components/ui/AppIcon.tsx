@@ -6,6 +6,7 @@ export type AppIconName =
   | 'bell'
   | 'briefcase'
   | 'card'
+  | 'chevron-up'
   | 'database'
   | 'dollar'
   | 'gauge'
@@ -56,6 +57,11 @@ const paths: Record<AppIconName, ReactElement> = {
       <path d="M3 6h18v12H3z" />
       <path d="M3 10h18" />
       <path d="M7 15h3" />
+    </>
+  ),
+  'chevron-up': (
+    <>
+      <path d="M6 14l6-6 6 6" />
     </>
   ),
   database: (
