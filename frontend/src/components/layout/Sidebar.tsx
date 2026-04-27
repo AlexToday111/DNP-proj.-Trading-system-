@@ -7,9 +7,15 @@ interface SidebarProps {
   activePage: PageId
   status: AppStatus
   onNavigate: (page: PageId) => void
+  mode?: 'desktop' | 'mobile'
 }
 
-export function Sidebar({ activePage, status, onNavigate }: SidebarProps) {
+export function Sidebar({
+  activePage,
+  status,
+  onNavigate,
+  mode = 'desktop'
+}: SidebarProps) {
   void status
 
   const iconMap: Record<PageId, AppIconName> = {
@@ -23,7 +29,11 @@ export function Sidebar({ activePage, status, onNavigate }: SidebarProps) {
   }
 
   return (
-    <aside className="flex h-full flex-col gap-9 bg-surface px-7 py-8">
+    <aside
+      className={`flex h-full flex-col gap-9 bg-surface px-7 py-8 ${
+        mode === 'mobile' ? 'border-r border-line shadow-card' : ''
+      }`}
+    >
       <div className="flex items-center gap-3">
         <img src={portaLogo} alt="Porta logo" className="h-8 w-8 shrink-0" />
         <div>

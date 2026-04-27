@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { AppLayout } from './components/layout/AppLayout'
 import { Sidebar } from './components/layout/Sidebar'
 import { TopBar } from './components/layout/TopBar'
@@ -15,6 +16,29 @@ import { SystemHealthPage } from './pages/SystemHealthPage'
 function App() {
   const dashboard = useDashboardState()
   const isFirstPageVisit = useFirstPageVisit(dashboard.activePage)
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+
+  useEffect(() => {
+    setIsMobileSidebarOpen(false)
+  }, [dashboard.activePage])
+
+  useEffect(() => {
+    if (!isMobileSidebarOpen) return
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsMobileSidebarOpen(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isMobileSidebarOpen])
+
+  const handleNavigate = (page: Parameters<typeof dashboard.goToPage>[0]) => {
+    dashboard.goToPage(page)
+    setIsMobileSidebarOpen(false)
+  }
 
   const page = (() => {
     switch (dashboard.activePage) {
@@ -81,11 +105,19 @@ function App() {
 
   return (
     <AppLayout
-      sidebar={
+      desktopSidebar={
         <Sidebar
           activePage={dashboard.activePage}
           status={dashboard.effectiveStatus}
-          onNavigate={dashboard.goToPage}
+          onNavigate={handleNavigate}
+        />
+      }
+      mobileSidebar={
+        <Sidebar
+          activePage={dashboard.activePage}
+          status={dashboard.effectiveStatus}
+          onNavigate={handleNavigate}
+          mode="mobile"
         />
       }
       topbar={
@@ -95,8 +127,11 @@ function App() {
           status={dashboard.effectiveStatus}
           symbols={dashboard.symbols}
           onSelectSymbol={dashboard.setSymbol}
+          onToggleSidebar={() => setIsMobileSidebarOpen(true)}
         />
       }
+      isMobileSidebarOpen={isMobileSidebarOpen}
+      onCloseMobileSidebar={() => setIsMobileSidebarOpen(false)}
     >
       {dashboard.error ? (
         <EmptyState
