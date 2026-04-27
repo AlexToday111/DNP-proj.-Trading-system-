@@ -1,0 +1,240 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  IMAGE_PREFIX: ${{ secrets.DOCKERHUB_USERNAME }}/porta
+
+jobs:
+
+  # ──────────────────────────────────────────────
+  #  Build & Test
+  # ──────────────────────────────────────────────
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+
+      - name: Build & push Docker image
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: docker/build-push-action@v5
+        with:
+          context: frontend
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}-frontend:latest
+            ${{ env.IMAGE_PREFIX }}-frontend:${{ github.sha }}
+
+  trading-core:
+    name: Trading Core (Java)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/java/trading-core
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+
+      - name: Build & test
+        run: mvn verify -B
+
+      - name: Docker login
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: docker/build-push-action@v5
+        with:
+          context: backend/java/trading-core
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}-trading-core:latest
+            ${{ env.IMAGE_PREFIX }}-trading-core:${{ github.sha }}
+
+  market-data-service:
+    name: Market Data Service (Go)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/golang/market-data-service
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/golang/market-data-service/go.mod
+          cache-dependency-path: backend/golang/market-data-service/go.sum
+
+      - run: go build ./...
+      - run: go test ./... -v
+
+      - name: Docker login
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: docker/build-push-action@v5
+        with:
+          context: backend/golang/market-data-service
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}-market-data:latest
+            ${{ env.IMAGE_PREFIX }}-market-data:${{ github.sha }}
+
+  strategy-service:
+    name: Strategy Service (Java)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/java/strategy-service
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+
+      - name: Build & test
+        run: mvn verify -B
+
+      - name: Docker login
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: docker/build-push-action@v5
+        with:
+          context: backend/java/strategy-service
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}-strategy-service:latest
+            ${{ env.IMAGE_PREFIX }}-strategy-service:${{ github.sha }}
+
+  execution-sim-service:
+    name: Execution Sim Service (Go)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/golang/execution-sim-service
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/golang/execution-sim-service/go.mod
+          cache-dependency-path: backend/golang/execution-sim-service/go.sum
+
+      - run: go build ./...
+      - run: go test ./... -v
+
+      - name: Docker login
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: docker/build-push-action@v5
+        with:
+          context: backend/golang/execution-sim-service
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}-execution-sim:latest
+            ${{ env.IMAGE_PREFIX }}-execution-sim:${{ github.sha }}
+
+  # ──────────────────────────────────────────────
+  #  Deploy
+  # ──────────────────────────────────────────────
+
+  deploy:
+    name: Deploy to server
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs:
+      - frontend
+      - trading-core
+      - market-data-service
+      - strategy-service
+      - execution-sim-service
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy docker-compose to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT }}
+          source: docker-compose.yml
+          target: ~/porta
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          script: |
+            cd ~/porta
+
+            # Логин в Docker Hub
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+            # Подтянуть свежие образы и перезапустить
+            export IMAGE_PREFIX="${{ env.IMAGE_PREFIX }}"
+            export IMAGE_TAG="${{ github.sha }}"
+            docker compose -f docker-compose.yml pull
+            docker compose -f docker-compose.yml up -d --remove-orphans
+
+            # Убрать старые образы
+            docker image prune -f

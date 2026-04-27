@@ -1,184 +1,321 @@
-## Задачи backend-команды
+<h1 align="center">Porta Backend</h1>
 
-### Эрнест — Java backend (Ядро)
+The Porta backend is a distributed event-driven system built around Java `trading-core`, Java `strategy-service`, Go services, Kafka, and PostgreSQL.
 
-Отвечает за реализацию центрального backend-сервиса системы, который управляет торговой логикой и состоянием портфеля.
+The target end-to-end flow is:
 
-Основные задачи:
-- реализовать сервис `trading-core` на Java;
-- подключить Kafka (producer + consumer);
-- подключить PostgreSQL;
-- описать доменные сущности:
-  - Signal,
-  - Order,
-  - ExecutionResult,
-  - Portfolio,
-  - Position;
-- реализовать обработку входящих сигналов;
-- на основе сигнала создавать ордер (BUY / SELL);
-- отправлять ордера в Kafka (`orders`);
-- принимать результаты исполнения (`execution-result`);
-- обновлять состояние портфеля:
-  - баланс,
-  - позиции,
-  - PnL;
-- сохранять состояние в базе данных;
-- обеспечить базовый end-to-end flow:
-  `signal → order → execution-result → portfolio update`.
+```text
+MarketData -> Signal -> Order -> ExecutionResult -> PortfolioUpdate
+```
 
----
+Java `trading-core` is the central core service and backend-for-frontend. The frontend must communicate only with Java `trading-core`.
 
-### Никита — Golang backend / market-data-service
+```text
+Frontend -> Java trading-core -> Kafka / PostgreSQL / backend services
+```
 
-Отвечает за сервис подачи рыночных данных в систему.
+The frontend must not communicate directly with:
 
-Основные задачи:
-- реализовать сервис `market-data-service` на Go;
-- читать рыночные данные:
-  - из CSV-файла, mock-источника или внешнего источника;
-- преобразовывать данные в единый формат события;
-- публиковать события в Kafka (`market-data`);
-- реализовать последовательную подачу данных (replay);
-- логировать отправляемые события.
+- Java `strategy-service`;
+- Go services;
+- Kafka;
+- PostgreSQL.
 
-Что должен делать сервис:
-1. читать строку из CSV;
-2. преобразовывать её в сообщение (JSON);
-3. отправлять сообщение в Kafka;
-4. повторять для всех данных.
+<h2 align="center">Team Responsibilities</h2>
 
-Минимальный результат:
-- сервис читает файл и отправляет market data в Kafka;
-- другие сервисы могут получать эти данные.
+| Member | Area | Responsibility |
+| --- | --- | --- |
+| Ernest | Java Backend | Java `trading-core`, Java `strategy-service`, orchestration, order flow, portfolio state, PostgreSQL persistence, frontend API. |
+| Nikita | Golang Backend | Go `market-data-service`, market data ingestion and Kafka publishing. |
+| Zakhar | Golang Backend | Go `execution-sim-service`, latest price cache, order execution simulation, execution result publishing. |
 
----
+<h2 align="center">Backend Services</h2>
 
-### Захар — Golang backend / execution-sim-service
+<h3 align="center">Java trading-core</h3>
 
-Отвечает за симуляцию исполнения ордеров (эмуляция биржи).
+Java `trading-core` owns the core trading state and frontend-facing API.
 
-Основные задачи:
-- реализовать сервис `execution-sim-service` на Go;
-- подписаться на Kafka topic `orders`;
-- подписаться на Kafka topic `market-data`;
-- поддерживать latest price cache по каждому `symbol`;
-- принимать ордера на покупку/продажу;
-- при получении order брать последнюю цену из cache;
-- реализовать простую симуляцию исполнения:
-  - ордер исполняется по последней известной рыночной цене;
-- формировать результат исполнения (`execution-result`);
-- публиковать результат обратно в Kafka;
-- если market data для `symbol` отсутствует или устарела, возвращать статус `REJECTED` / `NO_MARKET_DATA`;
-- логировать входящие market data, ордера и результаты.
+Responsibilities:
 
-Что должен делать сервис:
-1. читать market data из Kafka topic `market-data`;
-2. обновлять latest price cache по `symbol`;
-3. читать order из Kafka topic `orders`;
-4. находить актуальную цену для `order.symbol`;
-5. создавать execution result с `executedPrice`;
-6. отправлять execution result в Kafka topic `execution-result`.
+- expose REST API for the frontend;
+- consume Kafka topic `signals`;
+- create orders from signals;
+- create manual orders from frontend requests;
+- persist orders;
+- publish orders to Kafka topic `orders`;
+- consume Kafka topic `execution-result`;
+- update order status;
+- update portfolio cash, positions, average entry price, and PnL;
+- persist state in PostgreSQL;
+- return dashboard snapshots to the frontend.
 
-Для MVP cache может быть in-memory map внутри `execution-sim-service`.
-Redis можно оставить как optional улучшение, если будет нужно несколько инстансов сервиса или общий доступ к latest prices.
+Core domain entities:
 
-Важно: `execution-sim-service` не должен сам ходить во внешний источник market data.
-Источник рыночных данных внутри системы один — `market-data-service`.
+- `Signal`
+- `Order`
+- `ExecutionResult`
+- `Portfolio`
+- `Position`
 
-Минимальный результат:
-- сервис принимает ордера;
-- возвращает simulated execution result с `executedPrice`;
-- `trading-core` может обработать результат.
+<h3 align="center">Java strategy-service</h3>
 
----
+Java `strategy-service` is responsible for generating trading signals from market data.
 
-## Общая задача backend-команды
+Responsibilities:
 
-Необходимо согласовать единые контракты событий.
+- consume Kafka topic `market-data`;
+- keep the latest price per symbol in memory;
+- apply a simple MVP momentum rule;
+- publish Kafka topic `signals`;
+- include explicit signal quantity for Java `trading-core`.
 
-Минимально должны быть определены следующие события:
+Minimum MVP behavior:
 
-### Market data (`market-data`)
-- eventId
-- symbol
-- price
-- volume
-- timestamp
+1. Consume a market data event from Kafka topic `market-data`.
+2. Compare the price with the previous price for the same symbol.
+3. Publish `BUY` when the price is new or increasing.
+4. Publish `SELL` when the price is decreasing.
+5. Skip signal publishing when the price is unchanged.
 
-### Order (`orders`)
-- orderId
-- symbol
-- side (BUY / SELL)
-- quantity
-- orderType
-- limitPrice
-- timestamp
+<h3 align="center">Go market-data-service</h3>
 
-Для MVP все ордера можно считать `MARKET` orders, а `limitPrice` может быть `null`.
+Go `market-data-service` is responsible for providing market data to the rest of the system.
 
-### Execution result (`execution-result`)
-- executionId
-- orderId
-- symbol
-- side
-- quantity
-- executedPrice
-- status
-- timestamp
-- marketDataEventId
-- priceTimestamp
+Responsibilities:
 
-`marketDataEventId` и `priceTimestamp` нужны, чтобы было понятно, по какому market data event был исполнен ордер и насколько свежей была цена.
+- read market data from CSV, mock source, or another configured source;
+- validate required input fields;
+- convert rows into JSON market data events;
+- publish events to Kafka topic `market-data`;
+- support replay mode;
+- log published events.
 
----
+Minimum MVP behavior:
 
-## Общий поток данных
+1. Read a row from the market data source.
+2. Convert it to a JSON event.
+3. Publish it to Kafka.
+4. Repeat for all available data.
+
+<h3 align="center">Go execution-sim-service</h3>
+
+Go `execution-sim-service` simulates order execution.
+
+Responsibilities:
+
+- consume Kafka topic `orders`;
+- consume Kafka topic `market-data`;
+- maintain a latest price cache by `symbol`;
+- execute or reject incoming orders based on latest market data;
+- publish execution results to Kafka topic `execution-result`;
+- return `REJECTED` or `NO_MARKET_DATA` when a valid price is unavailable;
+- log incoming market data, orders, and execution results.
+
+Minimum MVP behavior:
+
+1. Consume market data from Kafka topic `market-data`.
+2. Update latest price cache by `symbol`.
+3. Consume orders from Kafka topic `orders`.
+4. Find the latest price for `order.symbol`.
+5. Create an execution result with `executedPrice`.
+6. Publish the result to Kafka topic `execution-result`.
+
+For MVP, the latest price cache can be an in-memory map inside `execution-sim-service`.
+
+Redis can remain an optional future improvement if multiple service instances need shared latest prices.
+
+Important boundary:
+
+`execution-sim-service` should not fetch market data directly from an external source. The internal source of market data is `market-data-service`, and other services consume that data through Kafka.
+
+<h2 align="center">Backend Event Flow</h2>
 
 ```text
 market-data-service
-  → Kafka topic `market-data`
-    → strategy-service
-    → execution-sim-service
+  -> Kafka topic `market-data`
+     -> Java strategy-service
+     -> execution-sim-service
+     -> optionally trading-core for dashboard/history
 
-strategy-service
-  → Kafka topic `signals`
-  → trading-core
+Java strategy-service
+  -> Kafka topic `signals`
+  -> trading-core
 
 trading-core
-  → Kafka topic `orders`
-  → execution-sim-service
+  -> Kafka topic `orders`
+  -> execution-sim-service
 
 execution-sim-service
-  → Kafka topic `execution-result`
-  → trading-core
+  -> Kafka topic `execution-result`
+  -> trading-core
 
 trading-core
-  → PostgreSQL
+  -> PostgreSQL
+  -> frontend API
 ```
 
-Важно про Kafka consumer groups:
-`strategy-service` и `execution-sim-service` должны читать `market-data` в разных consumer groups, чтобы оба сервиса получали все события market data независимо друг от друга.
+<h2 align="center">Kafka Topics</h2>
 
+| Topic | Producer | Consumers | Purpose |
+| --- | --- | --- | --- |
+| `market-data` | `market-data-service` | Java `strategy-service`, `execution-sim-service`, optionally `trading-core` | Market price stream. |
+| `signals` | Java `strategy-service` | `trading-core` | Trading decisions. |
+| `orders` | `trading-core` | `execution-sim-service` | Orders to simulate. |
+| `execution-result` | `execution-sim-service` | `trading-core` | Execution outcomes for order and portfolio updates. |
 
----
+<h2 align="center">Consumer Groups</h2>
 
-## Ожидаемый результат к концу первой недели
+Java `strategy-service` and `execution-sim-service` must consume `market-data` with different Kafka consumer groups.
 
-**Эрнест:**
-- `trading-core` запущен;
-- обрабатывает `signal`;
-- создаёт `order`;
-- обрабатывает `execution-result`;
-- обновляет портфель.
+This is required because both services need the full market data stream:
 
-**Никита:**
-- `market-data-service` запущен;
-- читает CSV;
-- отправляет `market-data` в Kafka.
+- Java `strategy-service` needs market data to generate signals;
+- `execution-sim-service` needs market data to maintain latest price cache.
 
-**Захар:**
-- `execution-sim-service` запущен;
-- читает `orders`;
-- читает `market-data`;
-- обновляет latest price cache;
-- отправляет `execution-result`.
+If both services share the same consumer group, Kafka will split market data events between them, which is not correct for Porta.
+
+<h2 align="center">Event Contracts</h2>
+
+<h3 align="center">MarketData</h3>
+
+Topic: `market-data`
+
+Fields:
+
+- `eventId`
+- `symbol`
+- `price`
+- `volume`
+- `timestamp`
+
+Example:
+
+```json
+{
+  "eventId": "md-001",
+  "symbol": "AAPL",
+  "price": 187.42,
+  "volume": 1000,
+  "timestamp": "2026-04-25T12:00:00Z"
+}
+```
+
+<h3 align="center">Order</h3>
+
+Topic: `orders`
+
+Fields:
+
+- `orderId`
+- `signalId`
+- `symbol`
+- `side`
+- `quantity`
+- `orderType`
+- `limitPrice`
+- `status`
+- `timestamp`
+
+For MVP, orders can be treated as `MARKET` orders and `limitPrice` can be `null`.
+
+Example:
+
+```json
+{
+  "orderId": "ord-001",
+  "signalId": "sig-001",
+  "symbol": "AAPL",
+  "side": "BUY",
+  "quantity": 10,
+  "orderType": "MARKET",
+  "limitPrice": null,
+  "status": "NEW",
+  "timestamp": "2026-04-25T12:00:02Z"
+}
+```
+
+<h3 align="center">ExecutionResult</h3>
+
+Topic: `execution-result`
+
+Fields:
+
+- `executionId`
+- `orderId`
+- `symbol`
+- `side`
+- `quantity`
+- `executedPrice`
+- `status`
+- `timestamp`
+- `marketDataEventId`
+- `priceTimestamp`
+
+`marketDataEventId` and `priceTimestamp` identify which market data event was used for the simulated execution and how fresh the execution price was.
+
+Example:
+
+```json
+{
+  "executionId": "exec-001",
+  "orderId": "ord-001",
+  "symbol": "AAPL",
+  "side": "BUY",
+  "quantity": 10,
+  "executedPrice": 187.42,
+  "status": "FILLED",
+  "marketDataEventId": "md-001",
+  "priceTimestamp": "2026-04-25T12:00:00Z",
+  "timestamp": "2026-04-25T12:00:03Z"
+}
+```
+
+<h2 align="center">Storage</h2>
+
+PostgreSQL is used by Java `trading-core` for persistent state:
+
+- signals;
+- orders;
+- execution results;
+- portfolio state;
+- positions;
+- market data history, if needed for dashboard and history views.
+
+<h2 align="center">MVP Targets</h2>
+
+<h3 align="center">Java Backend</h3>
+
+- `trading-core` is running.
+- It consumes signals.
+- It creates and publishes orders.
+- It consumes execution results.
+- It updates portfolio state.
+- It exposes frontend API endpoints.
+- `strategy-service` is running.
+- It consumes market data and publishes signals.
+
+<h3 align="center">Go market-data-service</h3>
+
+- Service is running.
+- It reads market data from CSV or configured source.
+- It publishes `market-data` events to Kafka.
+
+<h3 align="center">Go execution-sim-service</h3>
+
+- Service is running.
+- It consumes `orders`.
+- It consumes `market-data`.
+- It updates latest price cache.
+- It publishes `execution-result` events.
+
+<h2 align="center">Documentation</h2>
+
+More detailed system documentation is available in the root [`docs`](../docs) directory:
+
+- [Architecture](../docs/architecture.md)
+- [Backend Flow](../docs/backend-flow.md)
+- [Kafka Topics](../docs/kafka-topics.md)
+- [Event Contracts](../docs/event-contracts.md)
+- [Frontend API](../docs/frontend-api.md)
+- [Demo Flow](../docs/demo-flow.md)
+- [Development Notes](../docs/development-notes.md)

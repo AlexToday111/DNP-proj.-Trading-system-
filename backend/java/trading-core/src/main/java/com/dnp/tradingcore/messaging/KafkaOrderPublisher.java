@@ -32,7 +32,9 @@ public class KafkaOrderPublisher implements OrderPublisher {
                 order.symbol(),
                 order.side(),
                 order.quantity(),
-                order.requestedPrice(),
+                order.orderType(),
+                order.limitPrice(),
+                order.status(),
                 order.timestamp()
         );
 

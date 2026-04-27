@@ -9,6 +9,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 @Entity
 @Table(name = "positions")
@@ -20,7 +21,9 @@ public class PositionEntity {
     private String symbol;
     private BigDecimal quantity;
     private BigDecimal averagePrice;
+    private BigDecimal latestPrice;
     private BigDecimal unrealizedPnl;
+    private Instant updatedAt;
 
     @ManyToOne
     @JoinColumn(name = "portfolio_id", nullable = false)
@@ -54,12 +57,28 @@ public class PositionEntity {
         this.averagePrice = averagePrice;
     }
 
+    public BigDecimal getLatestPrice() {
+        return latestPrice;
+    }
+
+    public void setLatestPrice(BigDecimal latestPrice) {
+        this.latestPrice = latestPrice;
+    }
+
     public BigDecimal getUnrealizedPnl() {
         return unrealizedPnl;
     }
 
     public void setUnrealizedPnl(BigDecimal unrealizedPnl) {
         this.unrealizedPnl = unrealizedPnl;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public PortfolioEntity getPortfolio() {

@@ -19,8 +19,13 @@ spring:
       auto-offset-reset: earliest
 
 app:
+  cors:
+    allowed-origins:
+      - http://localhost:3000
+      - http://localhost:5173
   kafka:
     topics:
-      signals: ${KAFKA_SIGNALS_TOPIC:signal}
+      market-data: ${KAFKA_MARKET_DATA_TOPIC:market-data}
+      signals: ${KAFKA_SIGNALS_TOPIC:signals}
       orders: ${KAFKA_ORDERS_TOPIC:orders}
-      execution-results: ${KAFKA_EXECUTION_RESULTS_TOPIC:execution-result}
+      execution-result: ${KAFKA_EXECUTION_RESULT_TOPIC:${KAFKA_EXECUTION_RESULTS_TOPIC:execution-result}}

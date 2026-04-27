@@ -2,5 +2,6 @@ package com.dnp.tradingcore.domain;
 
 public enum ExecutionStatus {
     FILLED,
-    REJECTED
+    REJECTED,
+    NO_MARKET_DATA
 }

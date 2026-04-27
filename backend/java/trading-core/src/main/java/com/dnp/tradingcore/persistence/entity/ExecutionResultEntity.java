@@ -28,6 +28,8 @@ public class ExecutionResultEntity {
     @Enumerated(EnumType.STRING)
     private ExecutionStatus status;
 
+    private String marketDataEventId;
+    private Instant priceTimestamp;
     private Instant timestamp;
 
     public String getExecutionId() {
@@ -84,6 +86,22 @@ public class ExecutionResultEntity {
 
     public void setStatus(ExecutionStatus status) {
         this.status = status;
+    }
+
+    public String getMarketDataEventId() {
+        return marketDataEventId;
+    }
+
+    public void setMarketDataEventId(String marketDataEventId) {
+        this.marketDataEventId = marketDataEventId;
+    }
+
+    public Instant getPriceTimestamp() {
+        return priceTimestamp;
+    }
+
+    public void setPriceTimestamp(Instant priceTimestamp) {
+        this.priceTimestamp = priceTimestamp;
     }
 
     public Instant getTimestamp() {

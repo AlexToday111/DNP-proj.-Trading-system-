@@ -9,6 +9,7 @@ public record Signal(
         OrderSide side,
         BigDecimal quantity,
         BigDecimal targetPrice,
+        String reason,
         Instant timestamp
 ) {
 }
