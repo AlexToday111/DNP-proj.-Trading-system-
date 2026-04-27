@@ -23,7 +23,7 @@ export function MetricCard({
       <div className="flex min-w-0 items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="eyebrow">{label}</p>
-          <div className="mt-3 truncate font-mono text-2xl font-semibold tracking-[-0.06em] text-text sm:text-3xl">
+          <div className="mt-3 break-words font-mono text-2xl font-semibold tracking-[-0.06em] text-text sm:text-3xl">
             {value}
           </div>
         </div>

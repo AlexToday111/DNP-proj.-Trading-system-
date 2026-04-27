@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { cn, formatTime } from '../../lib/utils'
 import { type ActivityEvent } from '../../types/trading'
 
@@ -14,6 +15,14 @@ const toneStyles = {
 }
 
 export function ActivityFeed({ events, className = '' }: ActivityFeedProps) {
+  const previousFirstEventIdRef = useRef<string | null>(null)
+  const firstEventId = events[0]?.id ?? null
+  const shouldAnimateFirstEvent = firstEventId !== previousFirstEventIdRef.current
+
+  useEffect(() => {
+    previousFirstEventIdRef.current = firstEventId
+  }, [firstEventId])
+
   return (
     <section className={`surface-card panel-fixed flex flex-col p-5 sm:p-6 ${className}`}>
       <div className="border-b border-line pb-4">
@@ -30,7 +39,7 @@ export function ActivityFeed({ events, className = '' }: ActivityFeedProps) {
             className={cn(
               'min-w-0 overflow-hidden rounded-[22px] border p-4 transition',
               toneStyles[event.tone],
-              index === 0 && 'animate-fade-up'
+              index === 0 && shouldAnimateFirstEvent && 'animate-fade-up'
             )}
           >
             <div className="min-w-0">
