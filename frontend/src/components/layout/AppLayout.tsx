@@ -1,4 +1,5 @@
-import { type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
+import { AppIcon } from '../ui/AppIcon'
 
 interface AppLayoutProps {
   desktopSidebar: ReactNode
@@ -17,6 +18,23 @@ export function AppLayout({
   isMobileSidebarOpen,
   onCloseMobileSidebar
 }: AppLayoutProps) {
+  const [showScrollTop, setShowScrollTop] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 280)
+    }
+
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-canvas">
       <div
@@ -43,6 +61,18 @@ export function AppLayout({
           </main>
         </div>
       </div>
+      <button
+        type="button"
+        onClick={scrollToTop}
+        aria-label="Scroll to top"
+        className={`fixed bottom-5 right-5 z-30 grid h-12 w-12 place-items-center rounded-full border border-line bg-surface text-text shadow-card transition sm:bottom-6 sm:right-6 xl:bottom-8 xl:right-8 ${
+          showScrollTop
+            ? 'pointer-events-auto translate-y-0 opacity-100'
+            : 'pointer-events-none translate-y-3 opacity-0'
+        }`}
+      >
+        <AppIcon name="chevron-up" className="h-5 w-5" />
+      </button>
     </div>
   )
 }
