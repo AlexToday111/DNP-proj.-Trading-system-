@@ -107,7 +107,7 @@ export function OverviewPage({
         {services.length > 0 ? (
           <ServiceHealthCard services={services} compact />
         ) : (
-          <EmptyState title="No service status available" description="System status will appear here once `GET /system/status` returns data." />
+          <EmptyState title="No service status available" description="System status will appear here once services start reporting health data." />
         )}
       </div>
 
@@ -116,15 +116,15 @@ export function OverviewPage({
       <div className="grid gap-5 xl:grid-cols-12">
         <ActivityFeed events={activity} className="xl:col-span-7" />
         <section className="surface-card p-5 sm:p-6 xl:col-span-5">
-          <p className="eyebrow">Backend source</p>
+          <p className="eyebrow">Snapshot totals</p>
           <h3 className="mt-2 text-xl font-semibold tracking-[-0.05em] text-text sm:text-2xl">
             Dashboard snapshot
           </h3>
           <div className="mt-5 grid gap-3">
-            <MetricCard label="Market data rows" value={String(marketData.length)} detail="From `GET /dashboard` latestMarketData" />
-            <MetricCard label="Signals" value={String(signals.length)} detail="From `GET /dashboard` latestSignals" />
-            <MetricCard label="Orders" value={String(orders.length)} detail="From `GET /dashboard` latestOrders" />
-            <MetricCard label="Executions" value={String(executions.length)} detail="From `GET /dashboard` latestExecutions" />
+            <MetricCard label="Market data rows" value={String(marketData.length)} detail="Latest market events included in the dashboard snapshot" />
+            <MetricCard label="Signals" value={String(signals.length)} detail="Recent strategy signals available in the dashboard snapshot" />
+            <MetricCard label="Orders" value={String(orders.length)} detail="Recent order records included in the dashboard snapshot" />
+            <MetricCard label="Executions" value={String(executions.length)} detail="Recent execution records included in the dashboard snapshot" />
           </div>
         </section>
       </div>
