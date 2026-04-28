@@ -93,7 +93,6 @@ flowchart LR
     EXEC["Go execution-sim-service"]
     DB[("PostgreSQL")]
     REDIS[("Redis<br/>optional")]
-    OBS["Prometheus / Grafana"]
 
     MD -->|"publish market-data"| KAFKA
     KAFKA -->|"consume market-data"| STRATEGY
@@ -107,7 +106,6 @@ flowchart LR
     CORE <-->|"REST / WebSocket / SSE"| FE
     CORE <-->|"read/write state"| DB
     CORE -.->|"optional cache"| REDIS
-    OBS -.->|"metrics / dashboards"| CORE
 ```
 
 ---
@@ -124,7 +122,7 @@ flowchart LR
 | Persistent storage | PostgreSQL |
 | Optional cache | Redis |
 | Local infrastructure | Docker / Docker Compose |
-| Observability | Prometheus, Grafana, structured logs |
+| Observability | Structured logs |
 
 ---
 
@@ -172,8 +170,6 @@ Redis is optional and can be introduced for caching or shared low-latency reads.
 <h2 align="center">Observability and Infrastructure</h2>
 
 - Docker / Docker Compose are intended for local multi-service development.
-- Prometheus can collect service metrics.
-- Grafana can visualize service health and runtime dashboards.
 - Structured logs should make the event flow traceable from market data to portfolio update.
 
 ---
