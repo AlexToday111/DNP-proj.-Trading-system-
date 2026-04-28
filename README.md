@@ -59,7 +59,7 @@
   <tr>
     <td><b>Anya</b><br>Presentation</td>
     <td><b>Katya</b><br>Presentation</td>
-    <td><b>Masha</b><br>Q&amp;A engineer</td>
+    <td><b>Masha</b><br>QA engineer</td>
   </tr>
 </table>
 
