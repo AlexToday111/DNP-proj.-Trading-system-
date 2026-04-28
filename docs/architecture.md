@@ -31,7 +31,6 @@ The frontend must not:
 | Go `execution-sim-service` | Simulates order execution using orders and latest market prices. |
 | PostgreSQL | Persistent storage for trading state. |
 | Redis | Optional cache for future shared low-latency data. |
-| Prometheus / Grafana | Observability stack for metrics and dashboards. |
 
 ## Java trading-core as Orchestrator
 
@@ -81,11 +80,7 @@ For MVP, `execution-sim-service` can keep latest prices in a local in-memory cac
 
 ## Observability
 
-The intended observability stack includes:
-
-- Prometheus for metrics collection;
-- Grafana for dashboards;
-- structured logs for tracing events through the system.
+Structured logs should trace events through the system.
 
 Useful events to trace:
 
@@ -108,7 +103,6 @@ flowchart LR
     EXEC["Go execution-sim-service<br/>Execution Simulator"]
     DB[("PostgreSQL<br/>Trading State")]
     REDIS[("Redis<br/>optional cache")]
-    OBS["Prometheus / Grafana<br/>observability"]
 
     FE <-->|"REST / optional SSE or WebSocket"| CORE
     CORE <-->|"read/write orders, executions, portfolio"| DB
