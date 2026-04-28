@@ -174,6 +174,79 @@ Redis is optional and can be introduced for caching or shared low-latency reads.
 
 ---
 
+<h2 align="center">How to Install and Use</h2>
+
+This repository does not use `build:` entries in `docker-compose.yml`, so the application images must exist locally or be available in a remote registry before the system can be started with Docker Compose.
+
+<h3 align="center">Prerequisites</h3>
+
+- Docker Engine 24+;
+- Docker Compose v2;
+- optional for local frontend-only development: Node.js 20+ and npm;
+- optional for running services outside Docker: Java 17+, Maven, and Go 1.26+.
+
+<h3 align="center">Run the Full System Locally with Docker</h3>
+
+1. Build the application images from the repository root:
+
+```bash
+docker build -t porta-trading-core:latest ./backend/java/trading-core
+docker build -t porta-strategy-service:latest ./backend/java/strategy-service
+docker build -t porta-market-data:latest ./backend/golang/market-data-service
+docker build -t porta-execution-sim:latest ./backend/golang/execution-sim-service
+docker build -t porta-frontend:latest ./frontend
+```
+
+2. Start the full stack:
+
+```bash
+docker compose up -d
+```
+
+3. Open the application:
+
+```text
+Frontend: http://localhost
+Core API:  http://localhost:8080/api/v1
+Health:    http://localhost:8080/api/v1/health
+```
+
+4. Stop the system when finished:
+
+```bash
+docker compose down
+```
+
+If you need to reset PostgreSQL state as well, remove volumes:
+
+```bash
+docker compose down -v
+```
+
+<h3 align="center">Frontend-Only Local Development</h3>
+
+If backend services are already running and you only need the dashboard in development mode:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend expects Java `trading-core` to be available at `http://localhost:8080/api/v1` unless `VITE_API_BASE_URL` is overridden.
+
+<h3 align="center">Expected Runtime Flow</h3>
+
+After startup, the normal MVP flow is:
+
+```text
+market-data-service -> Kafka -> strategy-service -> trading-core -> execution-sim-service -> trading-core -> frontend
+```
+
+`market-data-service` replays CSV market data continuously, so the dashboard should begin showing market data, signals, orders, executions, and portfolio updates shortly after all containers become healthy.
+
+---
+
 <h2 align="center">Detailed Documentation</h2>
 
 More detailed documentation is available in the [`docs/`](./docs) directory:
